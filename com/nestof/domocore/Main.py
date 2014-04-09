@@ -3,26 +3,42 @@ Created on 21 mars 2014
 
 @author: S0087931
 '''
-from com.nestof.domocore.dao.ModeDao import ModeDao
-from com.nestof.domocore.dao.ParameterDao import ParameterDao
-from com.nestof.domocore.dao.PeriodDao import PeriodDao
+
+from com.nestof.domocore.Utils import Utils
+from com.nestof.domocore.service.DatabaseService import DatabaseService
+from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
 
 
 if __name__ == '__main__':
  
     database = 'd:/tmp/domotique.sqlite'
     
-    periodDao = PeriodDao(database)
-    periode = periodDao.findCurrent()
+    databaseService = DatabaseService(database)
     
-    if periode != None :
-        modeDao = ModeDao(database)
-        mode = modeDao.findByPk(periode._modeId)
-        print(mode._libelle)
-        print(mode._cons)
+    mode = databaseService.findCurrentMode();
+    print(mode._libelle)
     
-    parametrageDao = ParameterDao(database)
-    valeur = parametrageDao.getValue('POELE_ETAT')
-    print(valeur)
+    
+    print(databaseService.getForcedOff())
+    print(databaseService.getForcedOn())
+    print(databaseService.getPoeleActive())
+    
+    mczProtocolService = MCZProtocolService(databaseService);
+    
+    puissance = MCZProtocolService.PUISS_NIV1
+    ventilation = MCZProtocolService.VENT_NIV5
+    mode = MCZProtocolService.MODE_MANU
+    etat = MCZProtocolService.ETAT_ON
+    acteur = MCZProtocolService.ACTEUR_UTILISATEUR
+    
+    
+    trame = mczProtocolService.getTrame(puissance, ventilation, mode, etat, acteur)
+   
+    
+    utils = Utils()
+    print(utils.binaryStringToHex(trame))
+
+
+    
 
     
