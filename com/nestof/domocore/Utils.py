@@ -24,3 +24,6 @@ class Utils(object):
                 hexString += hex(int(temp,2))[2:]
                 temp = ''
         return hexString.upper()
+    
+    def temp(self):
+        None
