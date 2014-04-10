@@ -57,6 +57,7 @@ class Actionneur(Enum):
     utilisateur = 2
 
 def getOrdre(mode, etat):
+    """Return an Ordre from Mode and Etat"""
     if not isinstance(mode, Mode) :
         raise Exception('mode is not an instance of Mode')
     

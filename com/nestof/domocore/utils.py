@@ -15,8 +15,9 @@ utils.binaryStringToHex('1100')
 from datetime import datetime
 import time
 
+from com.nestof.domocore.domain.HistoTrameMCZ import HistoTrameMCZ
 
-        
+
 def binaryStringToHex(chaine):
     """Transform a binary string in hexadecimal value and return it"""
     temp = ''
@@ -36,3 +37,15 @@ def getCurrentDateTime():
 def intToBin3(intValue):
     """Return the binary representation of the int value, with 3 bits length"""
     return bin(intValue)[2:].zfill(3)
+
+def getFlag(ordre, puissance, ventilation, actionneur):
+    lastTrameMCZ = HistoTrameMCZ()
+    lastTrameMCZActionneur = HistoTrameMCZ()
+    
+    if lastTrameMCZ == None or lastTrameMCZActionneur == None:
+        return 1
+    
+    if lastTrameMCZ.actionneur == actionneur and lastTrameMCZ.ordre == ordre and  lastTrameMCZ.puissance == puissance and  lastTrameMCZ.ventilation == ventilation :
+        return 1^lastTrameMCZActionneur.flagTrame
+    return lastTrameMCZActionneur.flagTrame
+    
