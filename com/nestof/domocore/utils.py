@@ -2,6 +2,14 @@
 Created on 9 avr. 2014
 
 @author: S0087931
+
+exemple of usage :
+
+from com.nestof.domocore import utils
+....
+utils.binaryStringToHex('1100')
+
+
 '''
 
 from datetime import datetime
