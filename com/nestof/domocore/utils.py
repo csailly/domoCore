@@ -30,7 +30,9 @@ def binaryStringToHex(chaine):
     
 
 def getCurrentDateTime():
+    """Return the current dateTime"""
     return datetime.fromtimestamp(time.time())
 
 def intToBin3(intValue):
+    """Return the binary representation of the int value, with 3 bits length"""
     return bin(intValue)[2:].zfill(3)
