@@ -19,5 +19,5 @@ class HistoTrameMCZ(object):
         self.puissance = None
         self.ventilation = None
         self.flagTrame = None
-        self.typeOrdre = None
+        self.actionneur = None
         
