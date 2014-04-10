@@ -29,7 +29,7 @@ def binaryStringToHex(chaine):
     return hexString.upper()
     
 
-def getCurrentDateTime(self):
+def getCurrentDateTime():
     return datetime.fromtimestamp(time.time())
 
 def intToBin3(intValue):
