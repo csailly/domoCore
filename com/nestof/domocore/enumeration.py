@@ -70,9 +70,3 @@ def getOrdre(mode, etat):
         return Ordre.onAuto
     
     return Ordre.onManuel
-     
-        
-        
-    
-    
-    None
