@@ -9,15 +9,21 @@ class HistoTrameMCZ(object):
     classdocs
     '''
     tableName = 'histoTrameMCZ'
+    colSendDateName = 'dateEnvoi'
+    colOrderName = 'ordre'
+    colPuissanceName ='puissance'
+    colVentilationName = 'ventilation'
+    colFlagName = 'flagTrame'
+    colActionneurName = 'typeOrdre'
 
     def __init__(self):
         '''
         Constructor
         '''
-        self.dateEnvoi = None
-        self.ordre = None
-        self.puissance = None
-        self.ventilation = None
-        self.flagTrame = None
-        self.actionneur = None
+        self._sendDate = None
+        self._order = None
+        self._puissance = None
+        self._ventilation = None
+        self._flag = None
+        self._actionneur = None
         

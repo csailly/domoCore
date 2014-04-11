@@ -3,7 +3,9 @@ Created on 6 avr. 2014
 
 @author: nestof
 '''
-from com.nestof.domocore import  enumeration
+from com.nestof.domocore import  enumeration, utils
+from com.nestof.domocore.dao.HistoTrameMczDao import HistoTrameMczDao
+from com.nestof.domocore.domain.HistoTrameMCZ import HistoTrameMCZ
 
 
 class MCZProtocolService(object):
@@ -16,17 +18,16 @@ class MCZProtocolService(object):
     __remoteCode3 = 0x813
     
 
-    def __init__(self, databaseService):
+    def __init__(self, database):
         '''
         Constructor
         '''
-        self.__databaseSevice = databaseService
+        self.__database = database
+        self.__histoTrameMczDao = HistoTrameMczDao(database)
         
     def getTrame(self, puissance, ventilation, mode, etat, actionneur):
         ordre = enumeration.getOrdre(mode, etat)
-        
-        '''TODO Déterminer flag'''
-        flag = 1
+        flag = self.getFlag(ordre, puissance, ventilation, actionneur);
         
         trame = self.__getRemoteCode() 
         trame += self.__getData4(puissance, ventilation, ordre)  
@@ -113,3 +114,18 @@ class MCZProtocolService(object):
     
     def __getParityBit(self, value):
         return str(str(value.count('1') %2).count('0'))
+    
+    def getFlag(self, ordre, puissance, ventilation, actionneur):
+        lastTrameMCZ = self.__histoTrameMczDao.getLast()
+        lastTrameMCZActionneur = self.__histoTrameMczDao.getLastForActionneur(actionneur)
+    
+        if lastTrameMCZ == None or lastTrameMCZActionneur == None:
+            return 1
+    
+        if lastTrameMCZ._actionneur == actionneur and lastTrameMCZ._order == ordre and  lastTrameMCZ._puissance == puissance and  lastTrameMCZ._ventilation == ventilation :
+            return 1^int(lastTrameMCZActionneur._flag)
+        
+        return lastTrameMCZActionneur._flag
+    
+    
+    
