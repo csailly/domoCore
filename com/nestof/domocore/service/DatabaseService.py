@@ -6,7 +6,6 @@ Created on 6 avr. 2014
 from com.nestof.domocore.dao.ModeDao import ModeDao
 from com.nestof.domocore.dao.ParameterDao import ParameterDao
 from com.nestof.domocore.dao.PeriodDao import PeriodDao
-from com.nestof.domocore.dao.HistoTrameMczDao import HistoTrameMczDao
 
 
 class DatabaseService(object):
@@ -25,6 +24,8 @@ class DatabaseService(object):
         self._parametrageDao = ParameterDao(database)        
         
     def findCurrentMode(self):
+        """ Return the active mode """
+        
         periode = self._periodDao.findCurrent()
     
         mode = None

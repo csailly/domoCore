@@ -15,11 +15,9 @@ utils.binaryStringToHex('1100')
 from datetime import datetime
 import time
 
-from com.nestof.domocore.domain.HistoTrameMCZ import HistoTrameMCZ
 
-
-def binaryStringToHex(chaine):
-    """Transform a binary string in hexadecimal value and return it"""
+def binaryStringToHex(chaine):    
+    """ Transform a binary string in hexadecimal value and return it """
     temp = ''
     hexString = ''    
     for bit in chaine:        

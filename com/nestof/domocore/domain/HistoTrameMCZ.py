@@ -15,6 +15,7 @@ class HistoTrameMCZ(object):
     colVentilationName = 'ventilation'
     colFlagName = 'flagTrame'
     colActionneurName = 'typeOrdre'
+    colMessageName = 'message'
 
     def __init__(self):
         '''
@@ -26,4 +27,5 @@ class HistoTrameMCZ(object):
         self._ventilation = None
         self._flag = None
         self._actionneur = None
+        self._message = None
         

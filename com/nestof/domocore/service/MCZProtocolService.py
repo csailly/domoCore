@@ -6,6 +6,7 @@ Created on 6 avr. 2014
 from com.nestof.domocore import  enumeration, utils
 from com.nestof.domocore.dao.HistoTrameMczDao import HistoTrameMczDao
 from com.nestof.domocore.domain.HistoTrameMCZ import HistoTrameMCZ
+from com.nestof.domocore.dto.TrameMcz import TrameMcz
 
 
 class MCZProtocolService(object):
@@ -26,20 +27,51 @@ class MCZProtocolService(object):
         self.__histoTrameMczDao = HistoTrameMczDao(database)
         
     def getTrame(self, puissance, ventilation, mode, etat, actionneur):
-        ordre = enumeration.getOrdre(mode, etat)
-        flag = self.getFlag(ordre, puissance, ventilation, actionneur);
+        trame = TrameMcz()
         
-        trame = self.__getRemoteCode() 
-        trame += self.__getData4(puissance, ventilation, ordre)  
-        trame += self.__getData5(actionneur, flag)  
-        trame += self.__getData6(puissance, ventilation, ordre)  
-        trame += self.__getData7(actionneur,mode, flag)
+        trame._actionneur = actionneur
+        trame._order = enumeration.getOrdre(mode, etat)
+        trame._flag = self.__getFlag(trame._order, puissance, ventilation, actionneur);
+        trame._puissance = puissance
+        trame._ventilation = ventilation
+         
+        message = self.__getRemoteCode() 
+        message += self.__getData4(puissance, ventilation, trame._order)  
+        message += self.__getData5(actionneur, trame._flag)  
+        message += self.__getData6(puissance, ventilation, trame._order)  
+        message += self.__getData7(actionneur,mode, trame._flag)
+        
+        trame._message = message
+        
         return trame
+    
+    def saveTrame(self, trame):
+        histoTrameMcz = HistoTrameMCZ()
+        histoTrameMcz._sendDate = utils.getCurrentDateTime()
+        histoTrameMcz._actionneur = trame._actionneur  
+        histoTrameMcz._puissance = trame._puissance
+        histoTrameMcz._ventilation = trame._puissance
+        histoTrameMcz._order = trame._order
+        histoTrameMcz._flag = trame._flag
+        histoTrameMcz._message = trame._message
+    
+        histoTrameMczDao = HistoTrameMczDao(self.__database)
+        histoTrameMczDao.save(histoTrameMcz)
     
     def __getRemoteCode(self):
         return bin(self.__remoteCode1)[2:].zfill(12) + bin(self.__remoteCode2)[2:].zfill(12) + bin(self.__remoteCode3)[2:].zfill(12)
     
     def __getData4(self, puissance, ventilation, ordre):
+        """ 
+        Construct the data #4 
+        - bit 1 => 1
+        - bits 2 à 4 => niveau de ventilation
+        - bits 5 à 7 => puissance chauffe
+        - bits 8 à 10 => ordre
+        - bit 11 => bit de parité sur les bits 1 à 10
+        - bit 12 => 1
+        """
+        
         data4 = '1' 
         data4 += ventilation.getBinValue() 
         data4 += puissance.getBinValue()   
@@ -49,7 +81,23 @@ class MCZProtocolService(object):
         
         return data4
     
-    def __getData5(self, actionneur, flag): 
+    def __getData5(self, actionneur, flag):
+        """
+        Construct the data #5
+        - bit 1 => 1
+        - bit 2 => (actionneur == utilisateur)
+        - bit 3 => 0
+        - bit 4 => 0
+        - bit 5 => flag
+        - bit 6 => 0
+        - bit 7 => 1
+        - bit 8 => 0
+        - bit 9 => 1
+        - bit 10 => 0
+        - bit 11 => bit de parité sur les bits 1 à 10
+        - bit 12 => 1
+        """
+        
         data5 = '1'
         if(actionneur == enumeration.Actionneur.systeme):
             data5 += '0'
@@ -69,6 +117,22 @@ class MCZProtocolService(object):
         return data5
     
     def __getData6(self,puissance, ventilation,ordre):
+        """
+        Construct the data #6
+        - bit 1 => 1
+        - bit 2 => XOR (XOR (1er bit Ventilation, 2e bit Ventilation), 3e bit Puissance)
+        - bit 3 => NOT (XOR (XOR (2e bit Ventilation,3e bit Ventilation), 1e bit Ordre))
+        - bit 4 => NOT (XOR (XOR (Ventilation pair, 1er bit Puissance), 2e bit Ordre))
+        - bit 5 => NOT (1er bit Puissance)
+        - bit 6 => XOR (1er bit Ventilation, 2e bit Puissance)
+        - bit 7 => XOR (2e bit Ventilation, 3e bit Puissance)
+        - bit 8 => XOR (Ventilation pair, 1e bit Ordre))
+        - bit 9 => NOT (XOR (1er bit Puissance, 2e bit Ordre))
+        - bit 10 => 0
+        - bit 11 => Bit de parité des bits 2 à 10
+        - bit 12 => 1
+        """
+        
         binVentilation = ventilation.getBinValue() 
         binPuissance = puissance.getBinValue() 
         binOrdre = ordre.getBinValue() 
@@ -88,7 +152,23 @@ class MCZProtocolService(object):
 
         return data6
     
-    def __getData7(self, actionneur, mode, flag):      
+    def __getData7(self, actionneur, mode, flag):
+        """
+        Construct the data #7
+        - bit 1 => 1
+        - bit 2 => (actionneur == systeme)
+        - bit 3 => 1
+        - bit 4 => NOT(flag)
+        - bit 5 => flag
+        - bit 6 => (actionneur == utilisateur)
+        - bit 7 => 1
+        - bit 8 => 0
+        - bit 9 => flag
+        - bit 10 => 0
+        - bit 11 => Bit de parité des bits 2 à 10
+        - bit 12 => 1
+        """
+              
         data7 = '1'
         if(actionneur == enumeration.Actionneur.systeme):
             data7 += '1'
@@ -115,7 +195,9 @@ class MCZProtocolService(object):
     def __getParityBit(self, value):
         return str(str(value.count('1') %2).count('0'))
     
-    def getFlag(self, ordre, puissance, ventilation, actionneur):
+    def __getFlag(self, ordre, puissance, ventilation, actionneur):
+        """ Return the flag to use to construct the new trame message """
+        
         lastTrameMCZ = self.__histoTrameMczDao.getLast()
         lastTrameMCZActionneur = self.__histoTrameMczDao.getLastForActionneur(actionneur)
     

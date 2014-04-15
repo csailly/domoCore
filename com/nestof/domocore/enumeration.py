@@ -5,6 +5,7 @@ Created on 10 avr. 2014
 '''
 
 from enum import Enum, unique
+
 from com.nestof.domocore import utils
 
 

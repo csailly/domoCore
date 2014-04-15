@@ -5,7 +5,7 @@ Created on 11 avr. 2014
 '''
 import sqlite3
 
-from com.nestof.domocore import enumeration
+from com.nestof.domocore import enumeration, utils
 from com.nestof.domocore.domain.HistoTrameMCZ import HistoTrameMCZ
 
 
@@ -112,11 +112,12 @@ class HistoTrameMczDao(object):
             requete += HistoTrameMCZ.colPuissanceName + ','
             requete += HistoTrameMCZ.colVentilationName + ','
             requete += HistoTrameMCZ.colFlagName + ','
-            requete += HistoTrameMCZ.colActionneurName
+            requete += HistoTrameMCZ.colActionneurName + ','
+            requete += HistoTrameMCZ.colMessageName
             requete += ' ) '
-            requete += ' VALUES(?,?,?,?,?,?)'
+            requete += ' VALUES(?,?,?,?,?,?,?)'
             
-            cursor.execute(requete, (histoTrameMcz._sendDate, histoTrameMcz._order.value, histoTrameMcz._puissance.value, histoTrameMcz._ventilation.value, histoTrameMcz._flag, histoTrameMcz._actionneur.value))
+            cursor.execute(requete, (histoTrameMcz._sendDate, histoTrameMcz._order.value, histoTrameMcz._puissance.value, histoTrameMcz._ventilation.value, histoTrameMcz._flag, histoTrameMcz._actionneur.value, utils.binaryStringToHex(histoTrameMcz._message)))
             
             db.commit()            
         except Exception as e:
