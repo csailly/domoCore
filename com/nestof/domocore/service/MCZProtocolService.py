@@ -3,11 +3,12 @@ Created on 6 avr. 2014
 
 @author: nestof
 '''
+
+
 from com.nestof.domocore import  enumeration, utils
 from com.nestof.domocore.dao.HistoTrameMczDao import HistoTrameMczDao
 from com.nestof.domocore.domain.HistoTrameMCZ import HistoTrameMCZ
 from com.nestof.domocore.dto.TrameMcz import TrameMcz
-
 
 class MCZProtocolService(object):
     '''
@@ -26,7 +27,7 @@ class MCZProtocolService(object):
         self.__database = database
         self.__histoTrameMczDao = HistoTrameMczDao(database)
         
-    def getTrame(self, puissance, ventilation, mode, etat, actionneur):
+    def getTrame(self, mode, etat, actionneur, puissance, ventilation):
         trame = TrameMcz()
         
         trame._actionneur = actionneur
@@ -207,7 +208,22 @@ class MCZProtocolService(object):
         if lastTrameMCZ._actionneur == actionneur and lastTrameMCZ._order == ordre and  lastTrameMCZ._puissance == puissance and  lastTrameMCZ._ventilation == ventilation :
             return 1^int(lastTrameMCZActionneur._flag)
         
-        return lastTrameMCZActionneur._flag
+        return int(lastTrameMCZActionneur._flag)
+    
+    
+    def getNiveauPuissance(self, currentTemp, consigne):
+        """ Return the power level according to current temperature and wanted temperature """
+        if currentTemp >= consigne :
+            return enumeration.NiveauPuissance.niveau1
+        else :
+            if currentTemp >= consigne - 1 :
+                return enumeration.NiveauPuissance.niveau2
+            elif currentTemp >= consigne - 2 :
+                return enumeration.NiveauPuissance.niveau3
+            elif currentTemp >= consigne - 3 :
+                return enumeration.NiveauPuissance.niveau4
+            else :
+                return enumeration.NiveauPuissance.niveau5
     
     
     
