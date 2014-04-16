@@ -165,13 +165,21 @@ int main (int argc, char** argv)
 	log("Pin GPIO configuré en sortie");
 
 	
-	int i = 0;
-	
-	while (argv[2][i] != '/0')
-	{
-		cout << argv[2][i];
-	 i ++;
+	if (strlen(argv[2]) != 12*7){
+		log("Longueur message invalide");
+		exit(0);
 	}
+	
+	for(int i =0; i < 7; i++){
+		for(int j=0; j<12; j++){
+			if (argv[2][12*i+j]  == '0'){
+				bit2Message[i][j] = 0;
+			}else if (argv[2][12*i+j] == '1'){
+				bit2Message[i][j] = 1;
+			}
+		}
+	}
+
 	
 	//On passe en temps réel
 	scheduler_realtime();
