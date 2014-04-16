@@ -36,5 +36,13 @@ def intToBin3(intValue):
     """Return the binary representation of the int value, with 3 bits length"""
     return bin(intValue)[2:].zfill(3)
 
+def module_exists(module_name):
+    try:
+        __import__(module_name)
+    except ImportError:
+        return False
+    else:
+        return True
+
 
     

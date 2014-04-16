@@ -14,13 +14,17 @@ from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
 
 
+
 if __name__ == '__main__':
     
-    databasePath = "D:\+sandbox\work\domocore\domotique.sqlite"
+
     
-    databaseService = DatabaseService(databasePath)
-    mczProtocolService = MCZProtocolService(databasePath)
+    #databasePath = "D:\+sandbox\work\domocore"
+    databasePath = "D:\Documents\Work\domoCore"
+    databaseFilename = "domotique.sqlite"
     
+    databaseService = DatabaseService(databasePath+"\\"+databaseFilename)
+    mczProtocolService = MCZProtocolService(databasePath+"\\"+databaseFilename)
     
     """ Current Mode"""    
     currentMode = databaseService.findCurrentMode()
@@ -32,8 +36,8 @@ if __name__ == '__main__':
         print("Max             : " + str(currentMode._max) + "°C")
 
     """ Stove state"""
-    onStove = databaseService.getStoveActive()
-    print("\nPoêle actif     : " + str(onStove))
+    stoveIsOn = databaseService.getStoveActive()
+    print("\nPoêle actif     : " + str(stoveIsOn))
     
     """ Forced flags""" 
     onForced = databaseService.getForcedOn()
@@ -48,7 +52,7 @@ if __name__ == '__main__':
     print("Max             : " + str(forcedMode._max) + "°C")
     
     """ The current temp """    
-    currentTemp =19.0; #TODO Récupérer la température
+    currentTemp = 19.0#tempService.readTemp();
     print("\nTempérature     : " + str(currentTemp) + "°C")
     
     """ current mode temp zones"""
@@ -72,7 +76,7 @@ if __name__ == '__main__':
         offForced = False
         None
     elif (onForced and onPeriode):
-        if onStove :
+        if stoveIsOn :
             databaseService.setForcedOn(False)
             onForced = False
         elif tempZone1 or tempZone3 :
@@ -88,59 +92,34 @@ if __name__ == '__main__':
     niveauVentilation = enumeration.NiveauVentilation.auto
     trameMode = enumeration.Mode.automatique
     trameEtat = enumeration.Etat.off
-    trameActionneur = enumeration.Actionneur.systeme
+    trameActionneur = enumeration.Actionneur.utilisateur
     
           
     """ Start / Continue cases"""
     if onPeriode:
-        if not onForced and not offForced and tempZone1:
-            # TODO Envoyer On
+        if (not onForced and not offForced and tempZone1) or (not onForced and not offForced and tempZone2 and stoveIsOn) or (not stoveIsOn and onForced and tempZone2):
             niveauPuissance = mczProtocolService.getNiveauPuissance(currentTemp, currentMode._cons);
             startStove = True
-        elif not onForced and not offForced and tempZone2 and onStove :
-            # TODO Envoyer On
-            niveauPuissance = mczProtocolService.getNiveauPuissance(currentTemp, currentMode._cons);
-            startStove = True
-        elif not onStove and onForced and tempZone2 :
-            # TODO Envoyer On
-            niveauPuissance = mczProtocolService.getNiveauPuissance(currentTemp, currentMode._cons);
-            startStove = True
-    elif onForced :
+    elif onForced and (tempForcedZone1 or tempForcedZone2) :
         if tempForcedZone1 :
-            # TODO Envoyer On
-            niveauPuissance = mczProtocolService.getNiveauPuissance(currentTemp, forcedMode._cons);
-            startStove = True
-        elif tempForcedZone2 :
-            # TODO Envoyer On
             niveauPuissance = mczProtocolService.getNiveauPuissance(currentTemp, forcedMode._cons);
             startStove = True
     
     if startStove:
         trameEtat = enumeration.Etat.on
-    
-    
-    """ Stop cases """
-    if not startStove :     
-        if onStove :
-            if not onPeriode and not onForced and not offForced :
-                # TODO Envoyer Off
-                shutdownStove = True
-            elif onPeriode and not onForced and offForced :
-                # TODO Envoyer Off
-                shutdownStove = True
-            elif onPeriode and not onForced and not offForced and tempZone3 :
-                # TODO Envoyer Off
-                shutdownStove = True
-            elif not onPeriode and onForced and not offForced and tempForcedZone3 :
-                # TODO Envoyer Off
+    else : 
+        """ Stop cases """    
+        if stoveIsOn :
+            if (not onPeriode and not onForced and not offForced) or (onPeriode and not onForced and offForced) or (onPeriode and not onForced and not offForced and tempZone3) or (not onPeriode and onForced and not offForced and tempForcedZone3) :
                 shutdownStove = True
         
     if shutdownStove :
+        trameEtat = enumeration.Etat.off
         lastTrame = mczProtocolService.getLastTrame()
         if lastTrame != None :
             niveauPuissance = lastTrame._puissance
             niveauVentilation = lastTrame._ventilation                        
-        trameEtat = enumeration.Etat.off
+        
             
 
     print("\nstartStove     : " + str(startStove))
@@ -157,7 +136,8 @@ if __name__ == '__main__':
         print("Ventilation     : " + niveauVentilation.name)
         
         trame = mczProtocolService.getTrame(trameMode, trameEtat, trameActionneur, niveauPuissance, niveauVentilation)
-        print("Trame message   : " + utils.binaryStringToHex(trame._message))
+        print("Trame message bin: " + trame._message)
+        print("Trame message hex: " + utils.binaryStringToHex(trame._message))
                    
         try:
             #TODO Envoyer la trame ici

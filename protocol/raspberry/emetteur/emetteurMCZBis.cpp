@@ -164,76 +164,14 @@ int main (int argc, char** argv)
 	pinMode(txPin, OUTPUT);
 	log("Pin GPIO configuré en sortie");
 
-	int commande = atoi(argv[2]);
 	
-	int puissance = atoi(argv[3]);
+	int i = 0;
 	
-	int ventilation = atoi(argv[4]);
-
-	iToB(bit2Mode, commande, 3);
-	
-	bit2EmetteurCode1 = bit2Message[0];
-	bit2EmetteurCode2 = bit2Message[1];
-	bit2EmetteurCode3 = bit2Message[2];
-	bit2Donnee1 = bit2Message[3];
-	bit2Code1 = bit2Message[4];
-	bit2Donnee2 = bit2Message[5];
-	bit2Code2 = bit2Message[6];
-	
-	
-	iToB(bit2EmetteurCode1, emetteurCode1, 12);
-	iToB(bit2EmetteurCode2, emetteurCode2, 12);
-	iToB(bit2EmetteurCode3, emetteurCode3, 12);
-	iToB(bit2Code1, code1, 12);
-	iToB(bit2Code2, code2, 12);
-	
-	iToB(bit2Puissance, puissance, 3);
-	iToB(bit2Ventilation, ventilation, 3);
-	
-	
-	// Construction du tableau bit2Donnee1
-	bit2Donnee1[0] = 1;
-	bit2Donnee1[1] = bit2Ventilation[0];
-	bit2Donnee1[2] = bit2Ventilation[1];
-	bit2Donnee1[3] = bit2Ventilation[2];
-	bit2Donnee1[4] = bit2Puissance[0];
-	bit2Donnee1[5] = bit2Puissance[1];
-	bit2Donnee1[6] = bit2Puissance[2];
-	bit2Donnee1[7] = bit2Mode[0];
-	bit2Donnee1[8] = bit2Mode[1];
-	bit2Donnee1[9] = bit2Mode[2];
-	int nbBitA1 = 0;
-	for(int i=0; i < 10; i++){
-		if(bit2Donnee1[i]) nbBitA1++;
+	while (argv[2][i] != '/0')
+	{
+		cout << argv[2][i];
+	 i ++;
 	}
-	bit2Donnee1[10] = nbBitA1%2 == 0;
-	bit2Donnee1[11] = 1;
-	
-	// Construction du tableau bit2Donnee2
-	bit2Donnee2[0] = 1;
-	bit2Donnee2[1] = (bit2Ventilation[0]^bit2Ventilation[1])^bit2Puissance[2];
-	bit2Donnee2[2] = !(bit2Ventilation[1]^bit2Ventilation[2]);
-	bit2Donnee2[3] = !(((ventilation%2 == 0)^bit2Puissance[0])^bit2Mode[1]);
-	bit2Donnee2[4] = !bit2Puissance[0];
-	bit2Donnee2[5] = bit2Ventilation[0]^bit2Puissance[1];
-	bit2Donnee2[6] = bit2Ventilation[1]^bit2Puissance[2];
-	bit2Donnee2[7] = (ventilation%2 == 0);
-	bit2Donnee2[8] = !(bit2Puissance[0]^bit2Mode[1]);
-	bit2Donnee2[9] = 0;
-	nbBitA1 = 0;
-	for(int i=0; i < 10; i++){
-		if(bit2Donnee2[i]) nbBitA1++;
-	}
-	bit2Donnee2[10] = nbBitA1%2 == 0;
-	bit2Donnee2[11] = 1;
-	
-	for(int i =0; i < 7; i++){
-		for(int j=0; j<12; j++){
-		cout << bit2Message[i][j];
-		}
-		cout << endl;
-	}
-	
 	
 	//On passe en temps réel
 	scheduler_realtime();
