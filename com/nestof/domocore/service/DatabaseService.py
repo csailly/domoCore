@@ -43,10 +43,10 @@ class DatabaseService(object):
         mode._max = 22
         return mode
     
-    def getPoeleActive(self):
+    def getStoveActive(self):
         return self._parametrageDao.getValue('POELE_ETAT') == 'ON'
     
-    def setPoeleActive(self, active):
+    def setStoveActive(self, active):
         if active :
             self._parametrageDao.saveValue('POELE_ETAT', 'ON')
         else :

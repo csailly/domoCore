@@ -29,9 +29,9 @@ if __name__ == '__main__':
         print("Consigne        : " + str(currentMode._cons) + "°C")
         print("Max             : " + str(currentMode._max) + "°C")
 
-    """ Poele state"""
-    onPoele = databaseService.getPoeleActive()
-    print("\nPoêle actif     : " + str(onPoele))
+    """ Stove state"""
+    onStove = databaseService.getStoveActive()
+    print("\nPoêle actif     : " + str(onStove))
     
     """ Forced flags""" 
     onForced = databaseService.getForcedOn()
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         offForced = False
         None
     elif (onForced and onPeriode):
-        if onPoele :
+        if onStove :
             databaseService.setForcedOn(False)
             onForced = False
         elif tempZone1 or tempZone3 :
@@ -78,8 +78,8 @@ if __name__ == '__main__':
             onForced = False
     
      
-    debug_start = False
-    debug_shutdown = False
+    startStove = False
+    shutdownStove = False
     
     
     niveauPuissance = enumeration.NiveauPuissance.niveau1
@@ -94,76 +94,59 @@ if __name__ == '__main__':
         if not onForced and not offForced and tempZone1:
             # TODO Envoyer On
             niveauPuissance = mczProtocolService.getNiveauPuissance(currentTemp, currentMode._cons);
-            trameEtat = enumeration.Etat.on
-            debug_start = True
-        elif not onForced and not offForced and tempZone2 and onPoele :
+            startStove = True
+        elif not onForced and not offForced and tempZone2 and onStove :
             # TODO Envoyer On
             niveauPuissance = mczProtocolService.getNiveauPuissance(currentTemp, currentMode._cons);
-            trameEtat = enumeration.Etat.on
-            debug_start = True
-        elif not onPoele and onForced and tempZone2 :
+            startStove = True
+        elif not onStove and onForced and tempZone2 :
             # TODO Envoyer On
             niveauPuissance = mczProtocolService.getNiveauPuissance(currentTemp, currentMode._cons);
-            trameEtat = enumeration.Etat.on
-            debug_start = True
+            startStove = True
     elif onForced :
         if tempForcedZone1 :
             # TODO Envoyer On
             niveauPuissance = mczProtocolService.getNiveauPuissance(currentTemp, forcedMode._cons);
-            trameEtat = enumeration.Etat.on
-            debug_start = True
+            startStove = True
         elif tempForcedZone2 :
             # TODO Envoyer On
             niveauPuissance = mczProtocolService.getNiveauPuissance(currentTemp, forcedMode._cons);
-            trameEtat = enumeration.Etat.on
-            debug_start = True
+            startStove = True
+    
+    if startStove:
+        trameEtat = enumeration.Etat.on
     
     
-    """ Stop cases """    
-    if onPoele :
-        if not onPeriode and not onForced and not offForced :
-            # TODO Envoyer Off
-            lastTrame = mczProtocolService.getLastTrame()
-            if lastTrame != None :
-                niveauPuissance = lastTrame._puissance
-                niveauVentilation = lastTrame._ventilation                        
-            trameEtat = enumeration.Etat.off
-            debug_shutdown = True
-        elif onPeriode and not onForced and offForced :
-            # TODO Envoyer Off
-            lastTrame = mczProtocolService.getLastTrame()
-            if lastTrame != None :
-                niveauPuissance = lastTrame._puissance
-                niveauVentilation = lastTrame._ventilation                        
-            trameEtat = enumeration.Etat.off
-            trameEtat = enumeration.Etat.off
-            debug_shutdown = True
-        elif onPeriode and not onForced and not offForced and tempZone3 :
-            # TODO Envoyer Off
-            lastTrame = mczProtocolService.getLastTrame()
-            if lastTrame != None :
-                niveauPuissance = lastTrame._puissance
-                niveauVentilation = lastTrame._ventilation                        
-            trameEtat = enumeration.Etat.off
-            trameEtat = enumeration.Etat.off
-            debug_shutdown = True
-        elif not onPeriode and onForced and not offForced and tempForcedZone3 :
-            # TODO Envoyer Off
-            lastTrame = mczProtocolService.getLastTrame()
-            if lastTrame != None :
-                niveauPuissance = lastTrame._puissance
-                niveauVentilation = lastTrame._ventilation                        
-            trameEtat = enumeration.Etat.off
-            trameEtat = enumeration.Etat.off
-            debug_shutdown = True
+    """ Stop cases """
+    if not startStove :     
+        if onStove :
+            if not onPeriode and not onForced and not offForced :
+                # TODO Envoyer Off
+                shutdownStove = True
+            elif onPeriode and not onForced and offForced :
+                # TODO Envoyer Off
+                shutdownStove = True
+            elif onPeriode and not onForced and not offForced and tempZone3 :
+                # TODO Envoyer Off
+                shutdownStove = True
+            elif not onPeriode and onForced and not offForced and tempForcedZone3 :
+                # TODO Envoyer Off
+                shutdownStove = True
         
+    if shutdownStove :
+        lastTrame = mczProtocolService.getLastTrame()
+        if lastTrame != None :
+            niveauPuissance = lastTrame._puissance
+            niveauVentilation = lastTrame._ventilation                        
+        trameEtat = enumeration.Etat.off
+            
 
-    print("\ndebug_start     : " + str(debug_start))
-    print("debug_shutdown  : " + str(debug_shutdown))
+    print("\nstartStove     : " + str(startStove))
+    print("shutdownStove  : " + str(shutdownStove))
     
    
    
-    if debug_start or debug_shutdown :
+    if startStove or shutdownStove :
         print("\nEnvoi trame")
         print("Etat            : " + trameEtat.name)
         print("Mode            : " + trameMode.name)
@@ -176,10 +159,10 @@ if __name__ == '__main__':
                    
         try:
             #TODO Envoyer la trame ici
-            if debug_start : 
-                databaseService.setPoeleActive(True)
-            elif debug_shutdown :
-                databaseService.setPoeleActive(False)
+            if startStove : 
+                databaseService.setStoveActive(True)
+            else :
+                databaseService.setStoveActive(False)
             mczProtocolService.saveTrame(trame)        
         except Exception as e:
             # TODO ajouter log en base
