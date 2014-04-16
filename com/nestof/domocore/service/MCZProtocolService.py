@@ -46,12 +46,16 @@ class MCZProtocolService(object):
         
         return trame
     
+    def getLastTrame(self):
+        lastTrameMCZ = self.__histoTrameMczDao.getLast()
+        return lastTrameMCZ
+    
     def saveTrame(self, trame):
         histoTrameMcz = HistoTrameMCZ()
         histoTrameMcz._sendDate = utils.getCurrentDateTime()
         histoTrameMcz._actionneur = trame._actionneur  
         histoTrameMcz._puissance = trame._puissance
-        histoTrameMcz._ventilation = trame._puissance
+        histoTrameMcz._ventilation = trame._ventilation
         histoTrameMcz._order = trame._order
         histoTrameMcz._flag = trame._flag
         histoTrameMcz._message = trame._message
