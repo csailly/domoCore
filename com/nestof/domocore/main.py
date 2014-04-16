@@ -6,6 +6,8 @@ Created on 21 mars 2014
 
 
 
+from os.path import os
+
 from com.nestof.domocore import enumeration
 from com.nestof.domocore import utils
 from com.nestof.domocore.service.DatabaseService import DatabaseService
@@ -170,7 +172,7 @@ if __name__ == '__main__':
         finally:
             None
         
-        
+    print(os.getpid())
 
     
     
