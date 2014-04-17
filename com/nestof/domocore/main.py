@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 21 mars 2014
 
@@ -6,27 +7,30 @@ Created on 21 mars 2014
 
 
 
-from os.path import os
+from os.path import os, sys
+
+sys.path.append("/home/pi/scripts/domocore")
 
 from com.nestof.domocore import enumeration
 from com.nestof.domocore import utils
 from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
-
+from com.nestof.domocore.service.TempService import TempService
 
 
 if __name__ == '__main__':
 
     """ Database configuration """
-    databasePath = "D:\+sandbox\work\domocore"
-    #databasePath = "D:\Documents\Work\domoCore"
+    #databasePath = "D:\+sandbox\work\domocore\\"
+    databasePath = "D:\Documents\Work\domoCore\\"
+    #databasePath = "/home/pi/scripts/domocore/"
     databaseFilename = "domotique.sqlite"
 
     try:
-        with open(databasePath+"\\"+databaseFilename) as file:
+        with open(databasePath+databaseFilename) as file:
             pass
     except IOError as e:
-        print("Unable to open file "+ databasePath+"\\"+databaseFilename) #Does not exist OR no read permissions
+        print("Unable to open file "+ databasePath+databaseFilename) #Does not exist OR no read permissions
         exit(1)
 
     """ Send message program  """
@@ -36,12 +40,13 @@ if __name__ == '__main__':
     """ Services """    
     databaseService = DatabaseService(databasePath+"\\"+databaseFilename)
     mczProtocolService = MCZProtocolService(databasePath+"\\"+databaseFilename)
+    tempService = TempService()
     
     """ Current Mode"""    
     currentMode = databaseService.findCurrentMode()
 
     onPeriode = currentMode  != None
-    if onPeriode : 
+    if onPeriode :
         print("Mode            : " + currentMode._libelle)
         print("Consigne        : " + str(currentMode._cons) + "°C")
         print("Max             : " + str(currentMode._max) + "°C")
@@ -63,13 +68,14 @@ if __name__ == '__main__':
     print("Max             : " + str(forcedMode._max) + "°C")
     
     """ The current temp """    
-    currentTemp = 15.0#tempService.readTemp();
+    currentTemp = tempService.readTemp();
     print("\nTempérature     : " + str(currentTemp) + "°C")
     
     """ current mode temp zones"""
-    tempZone1 = currentTemp < currentMode._cons
-    tempZone3 =  currentTemp >= currentMode._max
-    tempZone2 = not tempZone1 and not tempZone3
+    if onPeriode :        
+        tempZone1 = currentTemp < currentMode._cons
+        tempZone3 =  currentTemp >= currentMode._max
+        tempZone2 = not tempZone1 and not tempZone3
     
     """ forced mode temp zones"""
     tempForcedZone1 = currentTemp < forcedMode._cons

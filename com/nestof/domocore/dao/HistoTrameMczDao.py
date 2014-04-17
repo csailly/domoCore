@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 11 avr. 2014
 
@@ -42,12 +43,12 @@ class HistoTrameMczDao(object):
                 print('Aucune trame')
             else :
                 histoTrameMcz = HistoTrameMCZ()
-                histoTrameMcz._actionneur = enumeration.Actionneur(int(result[5]))
+                histoTrameMcz._actionneur = enumeration.Actionneur().getEnum(int(result[5]))
                 histoTrameMcz._flag = result[4]
-                histoTrameMcz._order = enumeration.Ordre(int(result[1]))
-                histoTrameMcz._puissance = enumeration.NiveauPuissance(int(result[2]))
+                histoTrameMcz._order = enumeration.Ordre().getEnum(int(result[1]))
+                histoTrameMcz._puissance = enumeration.NiveauPuissance().getEnum(int(result[2]))
                 histoTrameMcz._sendDate = result[0]
-                histoTrameMcz._ventilation = enumeration.NiveauVentilation(int(result[3]))
+                histoTrameMcz._ventilation = enumeration.NiveauVentilation().getEnum(int(result[3]))
                 
                 
             
@@ -83,12 +84,12 @@ class HistoTrameMczDao(object):
                 print('Aucune trame')
             else :
                 histoTrameMcz = HistoTrameMCZ()
-                histoTrameMcz._actionneur = enumeration.Actionneur(int(result[5]))
+                histoTrameMcz._actionneur = enumeration.Actionneur().getEnum(int(result[5]))
                 histoTrameMcz._flag = result[4]
-                histoTrameMcz._order = enumeration.Ordre(int(result[1]))
-                histoTrameMcz._puissance = enumeration.NiveauPuissance(int(result[2]))
+                histoTrameMcz._order = enumeration.Ordre().getEnum(int(result[1]))
+                histoTrameMcz._puissance = enumeration.NiveauPuissance().getEnum(int(result[2]))
                 histoTrameMcz._sendDate = result[0]
-                histoTrameMcz._ventilation = enumeration.NiveauVentilation(int(result[3]))
+                histoTrameMcz._ventilation = enumeration.NiveauVentilation().getEnum(int(result[3]))
                 
                 
             

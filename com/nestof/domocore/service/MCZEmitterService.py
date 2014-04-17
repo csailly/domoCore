@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 17 avr. 2014
 
@@ -5,8 +6,10 @@ Created on 17 avr. 2014
 '''
 
 
-import wiringpi  
 from time import sleep, time
+
+import wiringpi  
+
 
 class MCZEmitterService(object):
     '''
