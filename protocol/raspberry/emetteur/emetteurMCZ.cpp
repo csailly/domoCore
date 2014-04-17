@@ -241,11 +241,11 @@ int main (int argc, char** argv)
 	//Envoi de la trame 5 fois de suite
 	for(int i=0; i<nbEnvois; i++){
 		digitalWrite(txPin, LOW);
-		for(int i =0; i < 7; i++){
+		for(int j =0; j < 7; j++){
 			digitalWrite(txPin, HIGH);
 			delayMicroseconds(dureeInterDonnees);
-			for(int j=0; j<12; j++){
-				sendBit(bit2Message[i][j]);
+			for(int k=0; k<12; k++){
+				sendBit(bit2Message[j][k]);
 			}
 		}
 		digitalWrite(txPin, LOW);

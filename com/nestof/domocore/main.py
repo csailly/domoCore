@@ -16,13 +16,24 @@ from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
 
 
 if __name__ == '__main__':
-    
 
-    
-    #databasePath = "D:\+sandbox\work\domocore"
-    databasePath = "D:\Documents\Work\domoCore"
+    """ Database configuration """
+    databasePath = "D:\+sandbox\work\domocore"
+    #databasePath = "D:\Documents\Work\domoCore"
     databaseFilename = "domotique.sqlite"
-    
+
+    try:
+        with open(databasePath+"\\"+databaseFilename) as file:
+            pass
+    except IOError as e:
+        print("Unable to open file "+ databasePath+"\\"+databaseFilename) #Does not exist OR no read permissions
+        exit(1)
+
+    """ Send message program  """
+    emmitterCommand = ""
+    emmitterTxPin = 0    
+
+    """ Services """    
     databaseService = DatabaseService(databasePath+"\\"+databaseFilename)
     mczProtocolService = MCZProtocolService(databasePath+"\\"+databaseFilename)
     
@@ -52,7 +63,7 @@ if __name__ == '__main__':
     print("Max             : " + str(forcedMode._max) + "°C")
     
     """ The current temp """    
-    currentTemp = 19.0#tempService.readTemp();
+    currentTemp = 15.0#tempService.readTemp();
     print("\nTempérature     : " + str(currentTemp) + "°C")
     
     """ current mode temp zones"""
@@ -141,6 +152,7 @@ if __name__ == '__main__':
                    
         try:
             #TODO Envoyer la trame ici
+            os.system(emmitterCommand + " " + str(emmitterTxPin) + " " + trame._message)
             if startStove : 
                 databaseService.setStoveActive(True)
             else :
@@ -148,7 +160,7 @@ if __name__ == '__main__':
             mczProtocolService.saveTrame(trame)        
         except Exception as e:
             # TODO ajouter log en base
-            None
+            raise
         finally:
             None
         
