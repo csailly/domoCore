@@ -152,7 +152,7 @@ if __name__ == '__main__':
                    
         try:
             #TODO Envoyer la trame ici
-            os.system(emmitterCommand + " " + str(emmitterTxPin) + " " + trame._message)
+            #os.system(emmitterCommand + " " + str(emmitterTxPin) + " " + trame._message)
             if startStove : 
                 databaseService.setStoveActive(True)
             else :
