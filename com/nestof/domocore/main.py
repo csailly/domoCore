@@ -169,6 +169,9 @@ if __name__ == '__main__':
         
         lastTrameIsSame = mczProtocolService.isTrameSameAsLastTrame(trame)
         lastTrameElapsesTime = mczProtocolService.getLastTrameElapsedTime()
+        
+        print("Dernière trame identique : "+ str(lastTrameIsSame))
+        print("Temps écoulé : "+ str(lastTrameElapsesTime))
 
 
         if (not lastTrameIsSame or (lastTrameIsSame and lastTrameElapsesTime >= 15.0)) :
