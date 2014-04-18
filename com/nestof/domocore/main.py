@@ -9,21 +9,31 @@ Created on 21 mars 2014
 
 from os.path import os, sys
 
-sys.path.append("/home/pi/scripts/domocore")
+sys.path.append(os.path.dirname(__file__))
 
 from com.nestof.domocore import enumeration
 from com.nestof.domocore import utils
 from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
-from com.nestof.domocore.service.TempService import TempService
+#from com.nestof.domocore.service.TempService import TempService
 
 
 if __name__ == '__main__':
-
+    
+    
+    
     """ Database configuration """
-    #databasePath = "D:\+sandbox\work\domocore\\"
-    databasePath = "D:\Documents\Work\domoCore\\"
-    #databasePath = "/home/pi/scripts/domocore/"
+    databasePath = None
+    
+    if sys.platform.startswith('linux') :
+        databasePath = "/home/pi/scripts/domocore/"
+    elif sys.platform.startswith('win') :
+        databasePath = "D:\+sandbox\work\domocore\\"
+        #databasePath = "D:\Documents\Work\domoCore\\"
+    else :
+        print("Unknown Operating System : " + sys.platform)
+        exit(1)
+        
     databaseFilename = "domotique.sqlite"
 
     try:
@@ -40,7 +50,7 @@ if __name__ == '__main__':
     """ Services """    
     databaseService = DatabaseService(databasePath+"\\"+databaseFilename)
     mczProtocolService = MCZProtocolService(databasePath+"\\"+databaseFilename)
-    tempService = TempService()
+    tempService = None#TempService()
     
     """ Current Mode"""    
     currentMode = databaseService.findCurrentMode()
@@ -68,7 +78,7 @@ if __name__ == '__main__':
     print("Max             : " + str(forcedMode._max) + "°C")
     
     """ The current temp """    
-    currentTemp = tempService.readTemp();
+    currentTemp = 16.0#tempService.readTemp();
     print("\nTempérature     : " + str(currentTemp) + "°C")
     
     """ current mode temp zones"""
