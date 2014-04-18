@@ -7,9 +7,8 @@ Created on 21 mars 2014
 
 
 
-from datetime import datetime
-from os.path import os, sys
-import time
+
+from os.path import sys
 
 from com.nestof.domocore import enumeration
 from com.nestof.domocore import utils
@@ -17,15 +16,12 @@ from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
 
 
-sys.path.append(os.path.dirname(__file__))
+
 
 #from com.nestof.domocore.service.TempService import TempService
 
 
-if __name__ == '__main__':
-    
-    
-    
+if __name__ == '__main__':  
     """ Database configuration """
     databasePath = None
     
@@ -191,17 +187,6 @@ if __name__ == '__main__':
             finally:
                 None
         else :
-            print("Même trame, délai inssufisant :" + str(lastTrameElapsesTime))
+            print("Même trame, délai insuffisant :" + str(lastTrameElapsesTime))
         
 
-
-    
-    
-    
-    
-
-        
-    
-    
-    
-    
