@@ -6,10 +6,13 @@ Created on 6 avr. 2014
 '''
 
 
+from datetime import datetime
+
 from com.nestof.domocore import  enumeration, utils
 from com.nestof.domocore.dao.HistoTrameMczDao import HistoTrameMczDao
 from com.nestof.domocore.domain.HistoTrameMCZ import HistoTrameMCZ
 from com.nestof.domocore.dto.TrameMcz import TrameMcz
+
 
 class MCZProtocolService(object):
     '''
@@ -229,6 +232,33 @@ class MCZProtocolService(object):
                 return enumeration.NiveauPuissance.niveau4
             else :
                 return enumeration.NiveauPuissance.niveau5
+            
+    def getLastTrameElapsedTime(self):
+        """ Return the elapsed time since the last trame in minute"""
+        lastTrame = self.getLastTrame()
+        if lastTrame == None :
+            return 0   
+        lastTime = lastTrame._sendDate
+        currentTime = utils.getCurrentDateTime()            
+        delta = currentTime - datetime.strptime(lastTime, "%Y-%m-%d %H:%M:%S.%f")
+        return (delta.days*24*60*60 + delta.seconds) / 60
+    
+    def isTrameSameAsLastTrame(self, trame):
+        """ Test if the current trame and the last trame are same"""
+        lastTrame = self.getLastTrame()
+                
+        if lastTrame == None :
+            return False                
+        if lastTrame._order != trame._order :
+            return False
+        if lastTrame._puissance != trame._puissance :
+            return False
+        if lastTrame._ventilation != trame._ventilation :
+            return False
+        return True
+        
+        
+        
     
     
     

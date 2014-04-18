@@ -7,14 +7,18 @@ Created on 21 mars 2014
 
 
 
+from datetime import datetime
 from os.path import os, sys
-
-sys.path.append(os.path.dirname(__file__))
+import time
 
 from com.nestof.domocore import enumeration
 from com.nestof.domocore import utils
 from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
+
+
+sys.path.append(os.path.dirname(__file__))
+
 #from com.nestof.domocore.service.TempService import TempService
 
 
@@ -165,22 +169,31 @@ if __name__ == '__main__':
         trame = mczProtocolService.getTrame(trameMode, trameEtat, trameActionneur, niveauPuissance, niveauVentilation)
         print("Trame message bin: " + trame._message)
         print("Trame message hex: " + utils.binaryStringToHex(trame._message))
-                   
-        try:
-            #TODO Envoyer la trame ici
-            #os.system(emmitterCommand + " " + str(emmitterTxPin) + " " + trame._message)
-            if startStove : 
-                databaseService.setStoveActive(True)
-            else :
-                databaseService.setStoveActive(False)
-            mczProtocolService.saveTrame(trame)        
-        except Exception as e:
-            # TODO ajouter log en base
-            raise
-        finally:
-            None
         
-    print(os.getpid())
+        
+        lastTrameIsSame = mczProtocolService.isTrameSameAsLastTrame(trame)
+        lastTrameElapsesTime = mczProtocolService.getLastTrameElapsedTime()
+
+
+        if (not lastTrameIsSame or (lastTrameIsSame and lastTrameElapsesTime >= 15.0)) :
+            print("On envoie")                
+            try:
+                #TODO Envoyer la trame ici
+                #os.system(emmitterCommand + " " + str(emmitterTxPin) + " " + trame._message)
+                if startStove : 
+                    databaseService.setStoveActive(True)
+                else :
+                    databaseService.setStoveActive(False)
+                mczProtocolService.saveTrame(trame)        
+            except Exception as e:
+                # TODO ajouter log en base
+                raise
+            finally:
+                None
+        else :
+            print("Même trame, délai inssufisant :" + str(lastTrameElapsesTime))
+        
+
 
     
     
