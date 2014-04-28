@@ -8,7 +8,7 @@ Created on 17 avr. 2014
 
 from time import sleep, time
 
-import wiringpi  
+import RPIO  
 
 
 class MCZEmitterService(object):
@@ -30,30 +30,32 @@ class MCZEmitterService(object):
         Constructor
         '''
         self.txPin = txPin
-        self.io = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_SYS)
-        self.io.pinMode(self.txPin,self.io.OUTPUT)  # Setup txPin
+        
         
     def sendMessage(self, message):
+        # set up GPIO output channel
+        RPIO.setup(self.txPin, RPIO.OUT)
         for i in range(1,self.nbEnvois) :
-            self.io.digitalWrite(18,self.io.LOW)
+            RPIO.output(self.txPin, False)
             for data in range(0,6):
-                self.io.digitalWrite(18,self.io.HIGH)
+                RPIO.output(self.txPin, True)
                 sleep(self.dureeInterDonnees)
                 for bit in range(0,11):
                     self.__sendBit(str(message)[data][bit == '1'])                    
-            self.io.digitalWrite(18,self.io.LOW)
+            RPIO.output(self.txPin, False)
             sleep(self.dureeInterMessage)
+        RPIO.cleanup()
         
     def __sendBit(self, bit):
         if bit :
-            self.io.digitalWrite(18,self.io.HIGH)
+            RPIO.output(self.txPin, True)
             sleep(self.dureeFront)  
-            self.io.digitalWrite(18,self.io.LOW)
+            RPIO.output(self.txPin, False)
             sleep(self.dureeFront)
         else :
-            self.io.digitalWrite(18,self.io.LOW)
+            RPIO.output(self.txPin, False)
             sleep(self.dureeFront)
-            self.io.digitalWrite(18,self.io.HIGH)
+            RPIO.output(self.txPin, True)
             sleep(self.dureeFront)
             
         

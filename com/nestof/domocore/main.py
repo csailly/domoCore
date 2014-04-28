@@ -5,36 +5,40 @@ Created on 21 mars 2014
 @author: S0087931
 '''
 
+from os.path import os, sys
 
-
-
-from os.path import sys
+pathname = os.path.dirname(sys.argv[0])
+sys.path.append(os.path.abspath(pathname)+"/../../../")
 
 from com.nestof.domocore import enumeration
 from com.nestof.domocore import utils
 from com.nestof.domocore.service.DatabaseService import DatabaseService
+from com.nestof.domocore.service.MCZEmitterService import MCZEmitterService
 from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
+from com.nestof.domocore.service.TempService import TempService
 
 
 
 
-#from com.nestof.domocore.service.TempService import TempService
 
 
-if __name__ == '__main__':  
+if __name__ == '__main__':
+    
+    print( utils.getCurrentDateTime())
     """ Database configuration """
     databasePath = None
     
     if sys.platform.startswith('linux') :
-        databasePath = "/home/pi/scripts/domocore/"
+        databasePath = "/home/pi/syno/"
     elif sys.platform.startswith('win') :
-        databasePath = "D:\+sandbox\work\domocore\\"
-        #databasePath = "D:\Documents\Work\domoCore\\"
+        #databasePath = "D:\+sandbox\work\domocore\\"
+        databasePath = "D:\Documents\Work\domoCore\\"
     else :
         print("Unknown Operating System : " + sys.platform)
         exit(1)
         
     databaseFilename = "domotique.sqlite"
+
 
     try:
         with open(databasePath+databaseFilename) as file:
@@ -45,12 +49,13 @@ if __name__ == '__main__':
 
     """ Send message program  """
     emmitterCommand = ""
-    emmitterTxPin = 0    
+    emmitterTxPin = 11    
 
     """ Services """    
-    databaseService = DatabaseService(databasePath+"\\"+databaseFilename)
-    mczProtocolService = MCZProtocolService(databasePath+"\\"+databaseFilename)
-    tempService = None#TempService()
+    databaseService = DatabaseService(databasePath+databaseFilename)
+    mczProtocolService = MCZProtocolService(databasePath+databaseFilename)
+    tempService = TempService()
+    mczEmitterService = MCZEmitterService(emmitterTxPin)
     
     """ Current Mode"""    
     currentMode = databaseService.findCurrentMode()
@@ -61,24 +66,28 @@ if __name__ == '__main__':
         print("Consigne        : " + str(currentMode._cons) + "°C")
         print("Max             : " + str(currentMode._max) + "°C")
 
+    """ Last mode id """
+    lastModeId = databaseService.getLastModeId()
+    print("Dernier mode :" + str(databaseService))
+
     """ Stove state"""
     stoveIsOn = databaseService.getStoveActive()
-    print("\nPoêle actif     : " + str(stoveIsOn))
+    print("Poêle actif     : " + str(stoveIsOn))
     
     """ Forced flags""" 
     onForced = databaseService.getForcedOn()
     offForced = databaseService.getForcedOff()
-    print("\nMarche forcée   : " + str(onForced))
+    print("Marche forcée   : " + str(onForced))
     print("Arrêt forcé     : " + str(offForced))
     
     """ Forced mode """
     forcedMode = databaseService.findForcedMode()
-    print("\nMode            : " + forcedMode._libelle)
+    print("Mode            : " + forcedMode._libelle)
     print("Consigne        : " + str(forcedMode._cons) + "°C")
     print("Max             : " + str(forcedMode._max) + "°C")
     
     """ The current temp """    
-    currentTemp = 16.0#tempService.readTemp();
+    currentTemp = tempService.readTemp();
     print("\nTempérature     : " + str(currentTemp) + "°C")
     
     """ current mode temp zones"""
@@ -94,6 +103,11 @@ if __name__ == '__main__':
     
     """RAZ forced flags"""
     if (onForced and offForced) :
+        databaseService.setForcedOff(False)
+        databaseService.setForcedOn(False)
+        onForced = False
+        offForced = False
+    elif lastModeId != None and currentMode != None and currentMode._id != lastModeId :
         databaseService.setForcedOff(False)
         databaseService.setForcedOn(False)
         onForced = False
@@ -119,7 +133,7 @@ if __name__ == '__main__':
     niveauVentilation = enumeration.NiveauVentilation.auto
     trameMode = enumeration.Mode.automatique
     trameEtat = enumeration.Etat.off
-    trameActionneur = enumeration.Actionneur.utilisateur
+    trameActionneur = enumeration.Actionneur.systeme
     
           
     """ Start / Continue cases"""
@@ -145,7 +159,13 @@ if __name__ == '__main__':
         lastTrame = mczProtocolService.getLastTrame()
         if lastTrame != None :
             niveauPuissance = lastTrame._puissance
-            niveauVentilation = lastTrame._ventilation                        
+            niveauVentilation = lastTrame._ventilation
+        if offForced and stoveIsOn:
+            trameActionneur = enumeration.Actionneur.utilisateur
+            
+    if startStove :
+        if onForced and not stoveIsOn :
+            trameActionneur = enumeration.Actionneur.utilisateur
         
             
 
@@ -178,7 +198,8 @@ if __name__ == '__main__':
             print("On envoie")                
             try:
                 #TODO Envoyer la trame ici
-                #os.system(emmitterCommand + " " + str(emmitterTxPin) + " " + trame._message)
+                os.system("sudo /home/pi/scripts/poele/emetteur/emetteurMCZBis 0 " + trame._message)
+                #mczEmitterService.sendMessage(trame._message)
                 if startStove : 
                     databaseService.setStoveActive(True)
                 else :

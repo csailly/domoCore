@@ -70,4 +70,9 @@ class DatabaseService(object):
             self._parametrageDao.saveValue('POELE_ARRET_FORCE','TRUE')
         else :
             self._parametrageDao.saveValue('POELE_ARRET_FORCE','FALSE')
-        
+            
+    def getLastModeId(self):
+        return self._parametrageDao.getValue('DERNIER_MODE')
+    
+    def setLastModeId(self, modeId):
+        self._parametrageDao.saveValue('DERNIER_MODE',modeId)

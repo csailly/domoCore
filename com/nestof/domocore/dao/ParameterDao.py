@@ -32,8 +32,9 @@ class ParameterDao(object):
             result = cursor.fetchone()
 
             value = result[0] 
-    
+            
         except Exception as e:
+            print(e)
             # Roll back any change if something goes wrong
             db.rollback()
             raise e
