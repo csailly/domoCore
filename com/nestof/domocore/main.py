@@ -124,6 +124,8 @@ if __name__ == '__main__':
             databaseService.setForcedOn(False)
             onForced = False
     
+    """ Last power off elapsed time"""
+    lastPowerOffElapsedTime = mczProtocolService.getLastPowerOffElapsedTime()
      
     startStove = False
     shutdownStove = False
@@ -166,6 +168,8 @@ if __name__ == '__main__':
     if startStove :
         if onForced and not stoveIsOn :
             trameActionneur = enumeration.Actionneur.utilisateur
+        if not stoveIsOn and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime <= 15 :
+            startStove = False
         
             
 

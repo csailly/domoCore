@@ -128,3 +128,45 @@ class HistoTrameMczDao(object):
         finally:
             # Close the db connection
             db.close()
+            
+            
+    def getLastPowerOff(self):
+        histoTrameMcz = None
+        
+        try :
+            db = sqlite3.connect(self._database)
+            cursor = db.cursor()
+            
+            requete = 'SELECT * FROM ' + HistoTrameMCZ.tableName
+            requete += ' WHERE '
+            requete += HistoTrameMCZ.colOrderName + ' = 0'
+            requete += ' order by ' + HistoTrameMCZ.colSendDateName + ' DESC '
+            requete += ' limit 1 ' 
+            
+            cursor.execute(requete)
+    
+            result = cursor.fetchone()
+            
+            
+            
+            if result == None :
+                print('Aucune trame')
+            else :
+                histoTrameMcz = HistoTrameMCZ()
+                histoTrameMcz._actionneur = enumeration.Actionneur().getEnum(int(result[5]))
+                histoTrameMcz._flag = result[4]
+                histoTrameMcz._order = enumeration.Ordre().getEnum(int(result[1]))
+                histoTrameMcz._puissance = enumeration.NiveauPuissance().getEnum(int(result[2]))
+                histoTrameMcz._sendDate = result[0]
+                histoTrameMcz._ventilation = enumeration.NiveauVentilation().getEnum(int(result[3]))
+                
+                
+            
+        except Exception as e:
+            # Roll back any change if something goes wrong
+            db.rollback()
+            raise e
+        finally:
+            # Close the db connection
+            db.close()
+            return histoTrameMcz

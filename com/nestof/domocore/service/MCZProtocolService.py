@@ -257,7 +257,15 @@ class MCZProtocolService(object):
             return False
         return True
         
-        
+    def getLastPowerOffElapsedTime(self):
+        """ Return  the elapsed time since the last power off in minute"""
+        lastPowerOff = self.__histoTrameMczDao.getLastPowerOff()
+        if lastPowerOff == None :
+            return None   
+        lastTime = lastPowerOff._sendDate
+        currentTime = utils.getCurrentDateTime()            
+        delta = currentTime - datetime.strptime(lastTime, "%Y-%m-%d %H:%M:%S.%f")
+        return (delta.days*24*60*60 + delta.seconds) / 60    
         
     
     
