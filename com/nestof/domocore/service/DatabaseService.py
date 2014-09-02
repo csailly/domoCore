@@ -76,3 +76,6 @@ class DatabaseService(object):
     
     def setLastModeId(self, modeId):
         self._parametrageDao.saveValue('DERNIER_MODE',modeId)
+        
+    def getConfig(self):
+        return self._parametrageDao.getValue('POELE_CONFIG')
