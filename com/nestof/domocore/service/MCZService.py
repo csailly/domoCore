@@ -7,9 +7,9 @@ Created on 22 mai 2014
 from os.path import os
 
 from com.nestof.domocore import enumeration
-from com.nestof.domocore.main import tempService, mczProtocolService
 from com.nestof.domocore.service.DatabaseService import DatabaseService
-from com.nestof.domocore.service.TempService import TempService
+from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
+from com.nestof.domocore.service.TempServiceDev import TempServiceDev
 
 
 class MCZService(object):
@@ -18,19 +18,21 @@ class MCZService(object):
     '''
 
 
-    def __init__(self,database):
+    def __init__(self, database):
         '''
         Constructor
         '''
         """ Services """    
         self.databaseService = DatabaseService(database)
-        self.tempService = TempService()
+        self.tempService = TempServiceDev()
+        self.mczProtocolService = MCZProtocolService(database)
+
         
     def launchAuto(self):
         """ Current Mode"""    
         currentMode = self.databaseService.findCurrentMode()
     
-        onPeriode = currentMode  != None
+        onPeriode = currentMode != None
     
         """ Last mode id """
         lastModeId = self.databaseService.getLastModeId()   
@@ -46,17 +48,17 @@ class MCZService(object):
         forcedMode = self.databaseService.findForcedMode()
         
         """ The current temp """    
-        currentTemp = tempService.readTemp();
+        currentTemp = self.tempService.readTemp();
         
         """ current mode temp zones"""
         if onPeriode :        
             tempZone1 = currentTemp < currentMode._cons
-            tempZone3 =  currentTemp >= currentMode._max
+            tempZone3 = currentTemp >= currentMode._max
             tempZone2 = not tempZone1 and not tempZone3
         
         """ forced mode temp zones"""
         tempForcedZone1 = currentTemp < forcedMode._cons
-        tempForcedZone3 =  currentTemp >= forcedMode._max
+        tempForcedZone3 = currentTemp >= forcedMode._max
         tempForcedZone2 = not tempForcedZone1 and not tempForcedZone3
         
         """ initialization """ 
@@ -75,7 +77,7 @@ class MCZService(object):
             print("Mode en cours   : " + currentMode._libelle)
             print("Consigne        : " + str(currentMode._cons) + "°C")
             print("Max             : " + str(currentMode._max) + "°C")
-        print("Dernier mode :" + str(lastModeId))
+        print("Dernier mode    : " + str(lastModeId))
         print("Poêle actif     : " + str(stoveIsOn))
         print("Marche forcée   : " + str(onForced))
         print("Arrêt forcé     : " + str(offForced))
@@ -113,11 +115,11 @@ class MCZService(object):
         """ Start / Continue cases"""
         if onPeriode:
             if (not onForced and not offForced and tempZone1) or (not onForced and not offForced and tempZone2 and stoveIsOn) or (not stoveIsOn and onForced and tempZone2):
-                niveauPuissance = mczProtocolService.getNiveauPuissance(currentTemp, currentMode._cons);
+                niveauPuissance = self.mczProtocolService.getNiveauPuissance(currentTemp, currentMode._cons);
                 startStove = True
         elif onForced and (tempForcedZone1 or tempForcedZone2) :
             if tempForcedZone1 :
-                niveauPuissance = mczProtocolService.getNiveauPuissance(currentTemp, forcedMode._cons);
+                niveauPuissance = self.mczProtocolService.getNiveauPuissance(currentTemp, forcedMode._cons);
                 startStove = True
         
         if startStove:
@@ -134,15 +136,15 @@ class MCZService(object):
             
         if shutdownStove :
             trameEtat = enumeration.Etat.off
-            lastTrame = mczProtocolService.getLastTrame()
+            lastTrame = self.mczProtocolService.getLastTrame()
             if lastTrame != None :
                 niveauPuissance = lastTrame._puissance
                 niveauVentilation = lastTrame._ventilation
             if offForced and stoveIsOn:
                 trameActionneur = enumeration.Actionneur.utilisateur
     
-        print("startStove     : " + str(startStove))
-        print("shutdownStove  : " + str(shutdownStove))
+        print("startStove      : " + str(startStove))
+        print("shutdownStove   : " + str(shutdownStove))
         
        
        
@@ -154,30 +156,30 @@ class MCZService(object):
             print("Puissance       : " + niveauPuissance.name)
             print("Ventilation     : " + niveauVentilation.name)
             
-            trame = mczProtocolService.getTrame(trameMode, trameEtat, trameActionneur, niveauPuissance, niveauVentilation)
-            #print("Trame message bin: " + trame._message)
-            #print("Trame message hex: " + utils.binaryStringToHex(trame._message))
+            trame = self.mczProtocolService.getTrame(trameMode, trameEtat, trameActionneur, niveauPuissance, niveauVentilation)
+            # print("Trame message bin: " + trame._message)
+            # print("Trame message hex: " + utils.binaryStringToHex(trame._message))
             
             
-            lastTrameIsSame = mczProtocolService.isTrameSameAsLastTrame(trame)
-            lastTrameElapsesTime = mczProtocolService.getLastTrameElapsedTime()
+            lastTrameIsSame = self.mczProtocolService.isTrameSameAsLastTrame(trame)
+            lastTrameElapsesTime = self.mczProtocolService.getLastTrameElapsedTime()
             
-            print("Dernière trame identique : "+ str(lastTrameIsSame))
-            print("Temps écoulé : "+ str(lastTrameElapsesTime))
+            print("Dernière trame identique : " + str(lastTrameIsSame))
+            print("Temps écoulé : " + str(lastTrameElapsesTime))
     
     
-            if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= 15.0) or (shutdownStove and lastTrameElapsesTime >= 5.0) ))) :
+            if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= 15.0) or (shutdownStove and lastTrameElapsesTime >= 5.0)))) :
                 """ Ici trame différente de la précédente ou Trame de mise en marche avec un délai >= 15 min ou Trame de mise en arrêt avec un délai >= 5 min  """
                 print("On envoie")                
                 try:
                     """Envoi de la trame"""
                     os.system("sudo /home/pi/scripts/poele/emetteur/emetteurMCZBis 0 " + trame._message)
-                    #mczEmitterService.sendMessage(trame._message)
+                    # mczEmitterService.sendMessage(trame._message)
                     if startStove : 
                         self.databaseService.setStoveActive(True)
                     else :
                         self.databaseService.setStoveActive(False)
-                    mczProtocolService.saveTrame(trame)        
+                    self.mczProtocolService.saveTrame(trame)        
                 except Exception as e:
                     # TODO ajouter log en base
                     raise
