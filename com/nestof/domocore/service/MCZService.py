@@ -4,13 +4,14 @@ Created on 22 mai 2014
 @author: nestof
 '''
 
+import logging
 from os.path import os
 
+import __main__
 from com.nestof.domocore import enumeration
 from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
-import __main__
-import logging
+
 
 class MCZService(object):
     '''
@@ -26,6 +27,7 @@ class MCZService(object):
         """ Services """    
         self.databaseService = DatabaseService(database)
         self.tempService = __main__.tempService
+        self.config = __main__.config
         self.mczProtocolService = MCZProtocolService(database)
 
         
@@ -191,13 +193,12 @@ class MCZService(object):
         print("Temps écoulé : " + str(lastTrameElapsesTime) + " minutes")
     
     
-        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= 15.0) or (shutdownStove and lastTrameElapsesTime >= 5.0)))) :
+        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self.config['EMMITTER']['emmitter.same.trame.start.delay'])) or (shutdownStove and lastTrameElapsesTime >= float(self.config['EMMITTER']['emmitter.same.trame.stop.delay']))))) :
             """ Ici trame différente de la précédente ou Trame de mise en marche avec un délai >= 15 min ou Trame de mise en arrêt avec un délai >= 5 min  """
             print("On envoie")                
             try:
                 """Envoi de la trame"""
-                os.system("sudo /home/pi/scripts/poele/emetteur/emetteurMCZBis 0 " + trame._message)
-                
+                os.system(self.config['EMMITTER']['emmitter.command'] +" " + trame._message)
                 if startStove : 
                     self.databaseService.setStoveActive(True)
                 else :
