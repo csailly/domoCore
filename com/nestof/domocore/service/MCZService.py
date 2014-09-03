@@ -150,48 +150,63 @@ class MCZService(object):
        
        
         if startStove or shutdownStove :
-            print("Construction trame")
-            print("Etat            : " + trameEtat.name)
-            print("Mode            : " + trameMode.name)
-            print("Actionneur      : " + trameActionneur.name)
-            print("Puissance       : " + niveauPuissance.name)
-            print("Ventilation     : " + niveauVentilation.name)
-            
-            trame = self.mczProtocolService.getTrame(trameMode, trameEtat, trameActionneur, niveauPuissance, niveauVentilation)
-            # print("Trame message bin: " + trame._message)
-            # print("Trame message hex: " + utils.binaryStringToHex(trame._message))
-            
-            
-            lastTrameIsSame = self.mczProtocolService.isTrameSameAsLastTrame(trame)
-            lastTrameElapsesTime = self.mczProtocolService.getLastTrameElapsedTime()
-            
-            print("Dernière trame identique : " + str(lastTrameIsSame))
-            print("Temps écoulé : " + str(lastTrameElapsesTime) + " minutes")
-    
-    
-            if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= 15.0) or (shutdownStove and lastTrameElapsesTime >= 5.0)))) :
-                """ Ici trame différente de la précédente ou Trame de mise en marche avec un délai >= 15 min ou Trame de mise en arrêt avec un délai >= 5 min  """
-                print("On envoie")                
-                try:
-                    """Envoi de la trame"""
-                    os.system("sudo /home/pi/scripts/poele/emetteur/emetteurMCZBis 0 " + trame._message)
-                    # mczEmitterService.sendMessage(trame._message)
-                    if startStove : 
-                        self.databaseService.setStoveActive(True)
-                    else :
-                        self.databaseService.setStoveActive(False)
-                    self.mczProtocolService.saveTrame(trame)        
-                except Exception as e:
-                    # TODO ajouter log en base
-                    raise
-                finally:
-                    None
-            else :
-                print("Même trame, délai insuffisant :" + str(lastTrameElapsesTime))
+            self.constructAndSendTrame(startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation)
         
     def launchManu(self):
+        """Récupérer valeurs de ordre manu"""
+        """Si ordre marche et T°courante < T°max mode manu alors envoyer ordre On"""
+        """Sinon envoyer ordre Off"""
+        """------------------------"""
+        
+        """ initialization """ 
+        startStove = False
+        shutdownStove = False
+            
+        niveauPuissance = enumeration.NiveauPuissance.niveau1
+        niveauVentilation = enumeration.NiveauVentilation.auto
+        trameMode = enumeration.Mode.automatique
+        trameEtat = enumeration.Etat.off
+        trameActionneur = enumeration.Actionneur.systeme
+        
         None
         
     def launchStop(self):
+        """Envoyer odre Off"""
         None
         
+    def constructAndSendTrame(self, startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation):
+        print("Construction trame")
+        print("Etat            : " + trameEtat.name)
+        print("Mode            : " + trameMode.name)
+        print("Actionneur      : " + trameActionneur.name)
+        print("Puissance       : " + niveauPuissance.name)
+        print("Ventilation     : " + niveauVentilation.name)
+            
+        trame = self.mczProtocolService.getTrame(trameMode, trameEtat, trameActionneur, niveauPuissance, niveauVentilation)
+            
+        lastTrameIsSame = self.mczProtocolService.isTrameSameAsLastTrame(trame)
+        lastTrameElapsesTime = self.mczProtocolService.getLastTrameElapsedTime()
+            
+        print("Dernière trame identique : " + str(lastTrameIsSame))
+        print("Temps écoulé : " + str(lastTrameElapsesTime) + " minutes")
+    
+    
+        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= 15.0) or (shutdownStove and lastTrameElapsesTime >= 5.0)))) :
+            """ Ici trame différente de la précédente ou Trame de mise en marche avec un délai >= 15 min ou Trame de mise en arrêt avec un délai >= 5 min  """
+            print("On envoie")                
+            try:
+                """Envoi de la trame"""
+                os.system("sudo /home/pi/scripts/poele/emetteur/emetteurMCZBis 0 " + trame._message)
+                
+                if startStove : 
+                    self.databaseService.setStoveActive(True)
+                else :
+                    self.databaseService.setStoveActive(False)
+                self.mczProtocolService.saveTrame(trame)        
+            except Exception as e:
+                # TODO ajouter log en base
+                raise
+            finally:
+                None
+        else :
+            print("Même trame, délai insuffisant :" + str(lastTrameElapsesTime))      

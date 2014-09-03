@@ -13,6 +13,7 @@ sys.path.append(os.path.abspath(pathname) + "/../../../")
 
 import configparser
 import logging
+from com.nestof.domocore import enumeration
 from com.nestof.domocore import utils
 from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore.service.MCZService import MCZService
@@ -71,13 +72,20 @@ if __name__ == '__main__':
 
     """ Services """    
     databaseService = DatabaseService(databasePath + databaseFilename)
+    mczService = MCZService(databasePath + databaseFilename)
 
     """ Stove configuration """
-    currentConfig = databaseService.getConfig()
+    configurationPoele = databaseService.getConfig()
 
-    mczService = MCZService(databasePath + databaseFilename)
-    
-    print("Launch...")
-    mczService.launchAuto()
+    if (configurationPoele == enumeration.ConfigurationPeole().automatique) :
+        print("Launch automatique mode...")
+        mczService.launchAuto()
+    elif (configurationPoele == enumeration.ConfigurationPeole().manuel) :
+        print("Launch manuel mode...")
+        mczService.launchManu()
+    else:
+        print("Launch stop mode...")
+        mczService.launchStop()
+        
         
 

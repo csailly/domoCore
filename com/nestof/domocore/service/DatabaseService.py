@@ -8,6 +8,7 @@ from com.nestof.domocore.dao.ModeDao import ModeDao
 from com.nestof.domocore.dao.ParameterDao import ParameterDao
 from com.nestof.domocore.dao.PeriodDao import PeriodDao
 from com.nestof.domocore.domain.Mode import Mode
+from com.nestof.domocore import enumeration
 
 
 class DatabaseService(object):
@@ -16,7 +17,7 @@ class DatabaseService(object):
     '''
 
 
-    def __init__(self,database):
+    def __init__(self, database):
         '''
         Constructor
         '''
@@ -38,7 +39,7 @@ class DatabaseService(object):
         return mode
     
     def findForcedMode(self):
-        mode = Mode()# TODO Récupérer le mode forcé
+        mode = Mode()  # TODO Récupérer le mode forcé
         mode._libelle = "Forcé"
         mode._cons = 19
         mode._max = 22
@@ -61,21 +62,21 @@ class DatabaseService(object):
     
     def setForcedOn(self, onForced):
         if onForced:
-            self._parametrageDao.saveValue('POELE_MARCHE_FORCEE','TRUE')
+            self._parametrageDao.saveValue('POELE_MARCHE_FORCEE', 'TRUE')
         else :
-            self._parametrageDao.saveValue('POELE_MARCHE_FORCEE','FALSE')
+            self._parametrageDao.saveValue('POELE_MARCHE_FORCEE', 'FALSE')
     
     def setForcedOff(self, offForced):
         if offForced == True :
-            self._parametrageDao.saveValue('POELE_ARRET_FORCE','TRUE')
+            self._parametrageDao.saveValue('POELE_ARRET_FORCE', 'TRUE')
         else :
-            self._parametrageDao.saveValue('POELE_ARRET_FORCE','FALSE')
+            self._parametrageDao.saveValue('POELE_ARRET_FORCE', 'FALSE')
             
     def getLastModeId(self):
         return self._parametrageDao.getValue('DERNIER_MODE')
     
     def setLastModeId(self, modeId):
-        self._parametrageDao.saveValue('DERNIER_MODE',modeId)
+        self._parametrageDao.saveValue('DERNIER_MODE', modeId)
         
     def getConfig(self):
-        return self._parametrageDao.getValue('POELE_CONFIG')
+        return enumeration.ConfigurationPeole().getEnum(self._parametrageDao.getValue('POELE_CONFIG'))

@@ -21,8 +21,8 @@ class Enum(object):
         return utils.intToBin3(self.value)
 
 class Mode(object):
-    automatique = Enum("automatique",0)
-    manuel = Enum("manuel",1)
+    automatique = Enum("automatique", 0)
+    manuel = Enum("manuel", 1)
     
     def __init__(self):
         '''
@@ -38,8 +38,8 @@ class Mode(object):
 
 
 class Etat(object):
-    on = Enum("on",1)
-    off = Enum("off",0)
+    on = Enum("on", 1)
+    off = Enum("off", 0)
     
     def __init__(self):
         '''
@@ -55,9 +55,9 @@ class Etat(object):
 
 
 class Ordre(object):
-    onAuto = Enum("onAuto",0b100)
-    onManuel = Enum("onManuel",0b010)
-    off = Enum("off",0b000)
+    onAuto = Enum("onAuto", 0b100)
+    onManuel = Enum("onManuel", 0b010)
+    off = Enum("off", 0b000)
     
     def __init__(self):
         '''
@@ -77,11 +77,11 @@ class Ordre(object):
     
 
 class NiveauPuissance(object):
-    niveau1 = Enum("niveau1",1)
-    niveau2 = Enum("niveau2",2)
-    niveau3 = Enum("niveau3",3)
-    niveau4 = Enum("niveau4",4)
-    niveau5 = Enum("niveau5",5)
+    niveau1 = Enum("niveau1", 1)
+    niveau2 = Enum("niveau2", 2)
+    niveau3 = Enum("niveau3", 3)
+    niveau4 = Enum("niveau4", 4)
+    niveau5 = Enum("niveau5", 5)
     
     def __init__(self):
         '''
@@ -104,12 +104,12 @@ class NiveauPuissance(object):
     
 
 class NiveauVentilation(object):
-    niveau1 = Enum("niveau1",1)
-    niveau2 = Enum("niveau2",2)
-    niveau3 = Enum("niveau3",3)
-    niveau4 = Enum("niveau4",4)
-    niveau5 = Enum("niveau5",5)
-    auto = Enum("auto",6)
+    niveau1 = Enum("niveau1", 1)
+    niveau2 = Enum("niveau2", 2)
+    niveau3 = Enum("niveau3", 3)
+    niveau4 = Enum("niveau4", 4)
+    niveau5 = Enum("niveau5", 5)
+    auto = Enum("auto", 6)
     
     def __init__(self):
         '''
@@ -133,8 +133,8 @@ class NiveauVentilation(object):
     
 
 class Actionneur(object):
-    systeme = Enum("systeme",1)
-    utilisateur = Enum("utilisateur",2)
+    systeme = Enum("systeme", 1)
+    utilisateur = Enum("utilisateur", 2)
     
     def __init__(self):
         '''
@@ -147,6 +147,21 @@ class Actionneur(object):
         if value == 2 :
             return self.utilisateur
         return None
+
+class ConfigurationPeole(object):
+    automatique = Enum("Automatique", "AUTO")
+    manuel = Enum("Manuel", "MANU")
+    arret = Enum("Arrêt", "STOP")
+    
+    def getEnum(self, value):
+        if value == "AUTO" :
+            return self.automatique
+        if value == "MANU" :
+            return self.manuel
+        if value == "STOP" :
+            return self.arret
+        return None
+    
 
 def getOrdre(mode, etat):
     """Return an Ordre from Mode and Etat"""
