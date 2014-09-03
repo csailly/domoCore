@@ -19,16 +19,21 @@ from com.nestof.domocore.service.MCZService import MCZService
 
 if __name__ == '__main__':
 
-    """ Loading config file """
-    print("Loading config file...")
+    
     if sys.platform.startswith('linux') :
         _configFilename = 'domocore.cfg'
+        from com.nestof.domocore.service.TempService import TempService
+        tempService = TempService()
     elif sys.platform.startswith('win') :
         _configFilename = 'domocoreDev.cfg'
+        from com.nestof.domocore.service.TempServiceDev import TempServiceDev
+        tempService = TempServiceDev()
     else :
         print("Unknown Operating System : " + sys.platform)
         exit(1)
-        
+    
+    """ Loading config file """
+    print("Loading config file...")    
     _configFile = "../../../" + _configFilename
     
     if os.path.isfile(_configFile):    

@@ -9,7 +9,7 @@ from os.path import os
 from com.nestof.domocore import enumeration
 from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
-from com.nestof.domocore.service.TempServiceDev import TempServiceDev
+import __main__
 import logging
 
 class MCZService(object):
@@ -22,9 +22,10 @@ class MCZService(object):
         '''
         Constructor
         '''
+        self.logger = logging.getLogger(__name__)
         """ Services """    
         self.databaseService = DatabaseService(database)
-        self.tempService = TempServiceDev()
+        self.tempService = __main__.tempService
         self.mczProtocolService = MCZProtocolService(database)
 
         
@@ -165,7 +166,7 @@ class MCZService(object):
             lastTrameElapsesTime = self.mczProtocolService.getLastTrameElapsedTime()
             
             print("Dernière trame identique : " + str(lastTrameIsSame))
-            print("Temps écoulé : " + str(lastTrameElapsesTime))
+            print("Temps écoulé : " + str(lastTrameElapsesTime) + " minutes")
     
     
             if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= 15.0) or (shutdownStove and lastTrameElapsesTime >= 5.0)))) :
