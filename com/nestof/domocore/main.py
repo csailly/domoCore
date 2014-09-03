@@ -12,6 +12,7 @@ pathname = os.path.dirname(sys.argv[0])
 sys.path.append(os.path.abspath(pathname) + "/../../../")
 
 import configparser
+import logging
 from com.nestof.domocore import utils
 from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore.service.MCZService import MCZService
@@ -43,6 +44,12 @@ if __name__ == '__main__':
         
     config = configparser.ConfigParser()
     config.read(_configFile, 'utf-8')
+    
+    """Logger configuration """
+    print("Configuring logger...")
+    loggingFilePath = config['LOGGER']['logger.path']
+    loggingFileName = config['LOGGER']['logger.filename']    
+    logging.basicConfig(filename=loggingFilePath + loggingFileName, format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
     
     
     """ Database configuration """

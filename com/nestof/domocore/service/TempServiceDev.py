@@ -4,7 +4,7 @@ Created on 16 avr. 2014
 
 @author: nestof
 '''
-
+import logging
 
 class TempServiceDev(object):
     '''
@@ -16,10 +16,12 @@ class TempServiceDev(object):
         '''
         Constructor
         '''
+        self.logger = logging.getLogger(__name__)
         print("##################################")
         print("# TempService Developpement Mode #")
-        print("##################################")
+        print("##################################")        
         
-    def readTemp(self):          
+    def readTemp(self):
+        self.logger.debug("Current temp : 19.0 °C");          
         return 19.0
         

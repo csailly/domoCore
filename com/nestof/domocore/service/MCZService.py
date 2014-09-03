@@ -10,7 +10,7 @@ from com.nestof.domocore import enumeration
 from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
 from com.nestof.domocore.service.TempServiceDev import TempServiceDev
-
+import logging
 
 class MCZService(object):
     '''
