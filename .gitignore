@@ -13,10 +13,10 @@
 *.a
 
 *.pyc
-.pydevproject
+/.pydevproject
 
 /.settings
-.project
+/.project
 
 /domotique.sqlite
 
