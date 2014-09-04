@@ -45,6 +45,13 @@ class DatabaseService(object):
         mode._max = 22
         return mode
     
+    def findManualMode(self):
+        mode = Mode()  # TODO Récupérer le mode manuel
+        mode._libelle = "Manuel"
+        mode._cons = 19
+        mode._max = 22
+        return mode
+    
     def getStoveActive(self):
         return self._parametrageDao.getValue('POELE_ETAT') == 'ON'
     
@@ -80,3 +87,7 @@ class DatabaseService(object):
         
     def getConfig(self):
         return enumeration.ConfigurationPeole().getEnum(self._parametrageDao.getValue('POELE_CONFIG'))
+    
+    def getOrdreManu(self):
+        return enumeration.OrdreManuel().getEnum(self._parametrageDao.getValue('ORDRE_MANU'))
+        

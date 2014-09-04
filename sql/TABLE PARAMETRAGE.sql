@@ -5,3 +5,5 @@ INSERT INTO "parametrage" VALUES('TEMP_MAXI_MARCHE_FORCEE','FLOAT','22','Tempér
 INSERT INTO "parametrage" VALUES('TEMP_CONSIGNE_MARCHE_FORCEE','FLOAT','19','Température de consigne à utiliser en marche forcée si aucun mode n''est défini');
 INSERT INTO "parametrage" VALUES('DERNIER_MODE','INTEGER','1','Dernier mode utilisé');
 INSERT INTO "parametrage" VALUES('POELE_CONFIG','STRING','AUTO','Configuration du fonctionnement du poêle : AUTO - MANU - STOP');
+INSERT INTO "parametrage" VALUES('ORDRE_MANU','STRING','ON','Ordre manuel à envoyer. Valeurs possibles : ON,OFF');
+

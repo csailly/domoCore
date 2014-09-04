@@ -20,6 +20,7 @@ class Enum(object):
     def getBinValue(self):
         return utils.intToBin3(self.value)
 
+"""Mode de régulation du poêle, Automatique ou Manuel"""
 class Mode(object):
     automatique = Enum("automatique", 0)
     manuel = Enum("manuel", 1)
@@ -36,7 +37,7 @@ class Mode(object):
             return self.manuel
         return None
 
-
+"""Etat"""
 class Etat(object):
     on = Enum("on", 1)
     off = Enum("off", 0)
@@ -53,7 +54,7 @@ class Etat(object):
             return self.on
         return None
 
-
+"""Ordre à envoyer au poêle, On en mode automatique, On en mode manuel, Off"""
 class Ordre(object):
     onAuto = Enum("onAuto", 0b100)
     onManuel = Enum("onManuel", 0b010)
@@ -75,7 +76,7 @@ class Ordre(object):
     
 
     
-
+"""Niveau de puissance de chauffe"""
 class NiveauPuissance(object):
     niveau1 = Enum("niveau1", 1)
     niveau2 = Enum("niveau2", 2)
@@ -102,7 +103,7 @@ class NiveauPuissance(object):
         return None
 
     
-
+"""Niveau de ventilation"""
 class NiveauVentilation(object):
     niveau1 = Enum("niveau1", 1)
     niveau2 = Enum("niveau2", 2)
@@ -131,7 +132,7 @@ class NiveauVentilation(object):
         return None
 
     
-
+"""Actionneur qui envoie l'ordre"""
 class Actionneur(object):
     systeme = Enum("systeme", 1)
     utilisateur = Enum("utilisateur", 2)
@@ -148,6 +149,7 @@ class Actionneur(object):
             return self.utilisateur
         return None
 
+"""Configuration du poêle, Automatique, Manuel, Arrêt"""
 class ConfigurationPeole(object):
     automatique = Enum("Automatique", "AUTO")
     manuel = Enum("Manuel", "MANU")
@@ -178,3 +180,14 @@ def getOrdre(mode, etat):
         return Ordre.onAuto
     
     return Ordre.onManuel
+
+class OrdreManuel(object):
+    marche = Enum("Marche", "ON")
+    arret = Enum("Arrêt", "OFF")
+    
+    def getEnum(self, value):
+        if value == "ON" :
+            return self.marche
+        if value == "OFF" :
+            return self.arret
+        return None
