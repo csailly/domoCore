@@ -9,28 +9,25 @@ Created on 21 mars 2014
 import configparser
 import logging
 from os.path import os, sys
-
 pathname = os.path.dirname(sys.argv[0])
 sys.path.append(os.path.abspath(pathname) + "/../../../")
 
 from com.nestof.domocore import enumeration
 from com.nestof.domocore import utils
 from com.nestof.domocore.service.DatabaseService import DatabaseService
+from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
 from com.nestof.domocore.service.MCZService import MCZService
-
-
-
 
 
 if __name__ == '__main__':
 
     
     if sys.platform.startswith('linux') :
-        _configFilename = 'domocore.cfg'
+        configFilename = 'domocore.cfg'
         from com.nestof.domocore.service.TempService import TempService
         tempService = TempService()
     elif sys.platform.startswith('win') :
-        _configFilename = 'domocoreDev.cfg'
+        configFilename = 'domocoreDev.cfg'
         from com.nestof.domocore.service.TempServiceDev import TempServiceDev
         tempService = TempServiceDev()
     else :
@@ -39,21 +36,21 @@ if __name__ == '__main__':
     
     """ Loading config file """
     print("Loading config file...")    
-    _configFile = "../../../" + _configFilename
+    configFile = "../../../" + configFilename
     
-    if os.path.isfile(_configFile):    
+    if os.path.isfile(configFile):    
         try:
-            with open(_configFile) as file:
+            with open(configFile) as file:
                 pass
         except IOError as e:
-            print ("Unable to open config file " + _configFile)  # Does not exist OR no read permissions
+            print ("Unable to open config file " + configFile)  # Does not exist OR no read permissions
             exit(1)
     else:
-        print("Config file " + _configFile + " not found")
+        print("Config file " + configFile + " not found")
         exit(1)    
         
     config = configparser.ConfigParser()
-    config.read(_configFile, 'utf-8')
+    config.read(configFile, 'utf-8')
     
     """Logger configuration """
     print("Configuring logger...")
@@ -76,7 +73,8 @@ if __name__ == '__main__':
 
     """ Services """    
     databaseService = DatabaseService(databasePath + databaseFilename)
-    mczService = MCZService(databasePath + databaseFilename)
+    mczProtocolService = MCZProtocolService(databasePath + databaseFilename)
+    mczService = MCZService(databaseService, tempService, mczProtocolService, config)
 
     """ Stove configuration """
     configurationPoele = databaseService.getConfig()

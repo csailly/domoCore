@@ -7,10 +7,7 @@ Created on 22 mai 2014
 import logging
 from os.path import os
 
-import __main__
 from com.nestof.domocore import enumeration
-from com.nestof.domocore.service.DatabaseService import DatabaseService
-from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
 
 
 class MCZService(object):
@@ -19,39 +16,39 @@ class MCZService(object):
     '''
 
 
-    def __init__(self, database):
+    def __init__(self, databaseService, tempService, mczProtocolService, config):
         '''
         Constructor
         '''
-        self.logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
         """ Services """    
-        self.databaseService = DatabaseService(database)
-        self.tempService = __main__.tempService
-        self.config = __main__.config
-        self.mczProtocolService = MCZProtocolService(database)
+        self._databaseService = databaseService
+        self._tempService = tempService
+        self._config = config
+        self._mczProtocolService = mczProtocolService
 
         
     def launchAuto(self):
         """ Current Mode"""    
-        currentMode = self.databaseService.findCurrentMode()
+        currentMode = self._databaseService.findCurrentMode()
     
         onPeriode = currentMode != None
     
         """ Last mode id """
-        lastModeId = self.databaseService.getLastModeId()   
+        lastModeId = self._databaseService.getLastModeId()   
     
         """ Stove state"""
-        stoveIsOn = self.databaseService.getStoveActive()    
+        stoveIsOn = self._databaseService.getStoveActive()    
         
         """ Forced flags""" 
-        onForced = self.databaseService.getForcedOn()
-        offForced = self.databaseService.getForcedOff()
+        onForced = self._databaseService.getForcedOn()
+        offForced = self._databaseService.getForcedOff()
         
         """ Forced mode """
-        forcedMode = self.databaseService.findForcedMode()
+        forcedMode = self._databaseService.findForcedMode()
         
         """ The current temp """    
-        currentTemp = self.tempService.readTemp();
+        currentTemp = self._tempService.readTemp();
         
         """ current mode temp zones"""
         if onPeriode :        
@@ -89,43 +86,45 @@ class MCZService(object):
         
         """RAZ forced flags"""
         if (onForced and offForced) :
-            self.databaseService.setForcedOff(False)
-            self.databaseService.setForcedOn(False)
+            self._databaseService.setForcedOff(False)
+            self._databaseService.setForcedOn(False)
             onForced = False
             offForced = False
         elif lastModeId != None and currentMode != None and str(currentMode._id) != str(lastModeId) :
             """ On change de mode => RAZ des flags """
-            self.databaseService.setForcedOff(False)
-            self.databaseService.setForcedOn(False)
+            self._databaseService.setForcedOff(False)
+            self._databaseService.setForcedOn(False)
             onForced = False
             offForced = False
         elif (offForced and not onPeriode):
             """ On est en arrêt forcé et en période d'arrêt => RAZ flag arrêt forcé """
-            self.databaseService.setForcedOff(False)
+            self._databaseService.setForcedOff(False)
             offForced = False
             None
         elif (onForced and onPeriode):
             """ On est en marche forcée et en période de fonctionnement """
             if stoveIsOn :
                 """ Le poêle est allumé => RAZ flag marche forcée """
-                self.databaseService.setForcedOn(False)
+                self._databaseService.setForcedOn(False)
                 onForced = False
             elif tempZone1 or tempZone3 :
                 """ Le poêle est éteint est on est dans les zones de température 1 ou 3 => RAZ flag marche forcée """
-                self.databaseService.setForcedOn(False)
+                self._databaseService.setForcedOn(False)
                 onForced = False
         """Mise à jour dernier mode"""
-        self.databaseService.setLastModeId(currentMode._id)
+        self._databaseService.setLastModeId(currentMode._id)
         
                       
         """ Start / Continue cases"""
         if onPeriode:
-            if (not onForced and not offForced and tempZone1) or (not onForced and not offForced and tempZone2 and stoveIsOn) or (not stoveIsOn and onForced and tempZone2):
-                niveauPuissance = self.mczProtocolService.getNiveauPuissance(currentTemp, currentMode._cons);
+            if (not onForced and not offForced and tempZone1) or \
+                    (not onForced and not offForced and tempZone2 and stoveIsOn) or \
+                    (not stoveIsOn and onForced and tempZone2):
+                niveauPuissance = self._mczProtocolService.getNiveauPuissance(currentTemp, currentMode._cons);
                 startStove = True
         elif onForced and (tempForcedZone1 or tempForcedZone2) :
             if tempForcedZone1 :
-                niveauPuissance = self.mczProtocolService.getNiveauPuissance(currentTemp, forcedMode._cons);
+                niveauPuissance = self._mczProtocolService.getNiveauPuissance(currentTemp, forcedMode._cons);
                 startStove = True
         
         if startStove:
@@ -135,14 +134,17 @@ class MCZService(object):
         else : 
             """ Stop cases """    
             if stoveIsOn :
-                if (not onPeriode and not onForced and not offForced) or (onPeriode and not onForced and offForced) or (onPeriode and not onForced and not offForced and tempZone3) or (not onPeriode and onForced and not offForced and tempForcedZone3) :
+                if (not onPeriode and not onForced and not offForced) or \
+                        (onPeriode and not onForced and offForced) or \
+                        (onPeriode and not onForced and not offForced and tempZone3) or \
+                        (not onPeriode and onForced and not offForced and tempForcedZone3) :
                     shutdownStove = True
             else :
                 shutdownStove = True 
             
         if shutdownStove :
             trameEtat = enumeration.Etat.off
-            lastTrame = self.mczProtocolService.getLastTrame()
+            lastTrame = self._mczProtocolService.getLastTrame()
             if lastTrame != None :
                 niveauPuissance = lastTrame._puissance
                 niveauVentilation = lastTrame._ventilation
@@ -174,16 +176,16 @@ class MCZService(object):
         trameActionneur = enumeration.Actionneur.systeme
         
         """Manual Order"""
-        manualOrder = self.databaseService.getOrdreManu()
+        manualOrder = self._databaseService.getOrdreManu()
         
         """Is stove On """
-        stoveIsOn = self.databaseService.getStoveActive()
+        stoveIsOn = self._databaseService.getStoveActive()
         
         """ The current temperature """    
-        currentTemp = self.tempService.readTemp()
+        currentTemp = self._tempService.readTemp()
         
         """ Parametered temperatures """
-        manualMode = self.databaseService.findManualMode()
+        manualMode = self._databaseService.findManualMode()
         
         """ Manual mode temperature zones"""
         tempManualZone1 = currentTemp < manualMode._cons
@@ -201,7 +203,7 @@ class MCZService(object):
         
         """Start/ Continue cases """
         if manualOrder == enumeration.OrdreManuel.marche and tempManualZone1 or (stoveIsOn and tempManualZone2):
-            niveauPuissance = self.mczProtocolService.getNiveauPuissance(currentTemp, manualMode._cons);
+            niveauPuissance = self._mczProtocolService.getNiveauPuissance(currentTemp, manualMode._cons);
             startStove = True
             trameEtat = enumeration.Etat.on
             if not stoveIsOn :
@@ -213,7 +215,7 @@ class MCZService(object):
         if manualOrder == enumeration.OrdreManuel.arret or (not startStove):
             shutdownStove = True
             trameEtat = enumeration.Etat.off
-            lastTrame = self.mczProtocolService.getLastTrame()
+            lastTrame = self._mczProtocolService.getLastTrame()
             if lastTrame != None :
                 niveauPuissance = lastTrame._puissance
                 niveauVentilation = lastTrame._ventilation
@@ -240,26 +242,26 @@ class MCZService(object):
         print("  Puissance       : " + niveauPuissance.name)
         print("  Ventilation     : " + niveauVentilation.name)
             
-        trame = self.mczProtocolService.getTrame(trameMode, trameEtat, trameActionneur, niveauPuissance, niveauVentilation)
+        trame = self._mczProtocolService.getTrame(trameMode, trameEtat, trameActionneur, niveauPuissance, niveauVentilation)
             
-        lastTrameIsSame = self.mczProtocolService.isTrameSameAsLastTrame(trame)
-        lastTrameElapsesTime = self.mczProtocolService.getLastTrameElapsedTime()
+        lastTrameIsSame = self._mczProtocolService.isTrameSameAsLastTrame(trame)
+        lastTrameElapsesTime = self._mczProtocolService.getLastTrameElapsedTime()
             
         print("  Dernière trame identique : " + str(lastTrameIsSame))
         print("  Temps écoulé : " + str(lastTrameElapsesTime) + " minutes")
     
     
-        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self.config['EMMITTER']['emmitter.same.trame.start.delay'])) or (shutdownStove and lastTrameElapsesTime >= float(self.config['EMMITTER']['emmitter.same.trame.stop.delay']))))) :
+        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self._config['EMMITTER']['emmitter.same.trame.start.delay'])) or (shutdownStove and lastTrameElapsesTime >= float(self._config['EMMITTER']['emmitter.same.trame.stop.delay']))))) :
             """ Ici trame différente de la précédente ou Trame de mise en marche avec un délai >= 15 min ou Trame de mise en arrêt avec un délai >= 5 min  """
             print("  On envoie")                
             try:
                 """Envoi de la trame"""
-                os.system(self.config['EMMITTER']['emmitter.command'] + " " + trame._message)
+                os.system(self._config['EMMITTER']['emmitter.command'] + " " + trame._message)
                 if startStove : 
-                    self.databaseService.setStoveActive(True)
+                    self._databaseService.setStoveActive(True)
                 else :
-                    self.databaseService.setStoveActive(False)
-                self.mczProtocolService.saveTrame(trame)        
+                    self._databaseService.setStoveActive(False)
+                self._mczProtocolService.saveTrame(trame)        
             except Exception as e:
                 # TODO ajouter log en base
                 raise
