@@ -23,6 +23,6 @@ class TempServiceDev(object):
         
     def readTemp(self):
         temp = 25.0
-        self.logger.debug("Current temp : " + str(temp) + " °C");          
+        self.logger.debug("Current temp : " + str(temp) + " °C");                  
         return temp
         

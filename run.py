@@ -8,6 +8,7 @@ Created on 21 mars 2014
 
 import configparser
 import logging
+import logging.config
 from os.path import os, sys, normpath, normcase
 
 from com.nestof.domocore import enumeration
@@ -54,7 +55,12 @@ if __name__ == '__main__':
     loggingFilePath = normcase(normpath(config['LOGGER']['logger.path'])) + os.sep
     loggingFileName = config['LOGGER']['logger.filename']    
     logging.basicConfig(filename=loggingFilePath + loggingFileName, format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
+    
+    
+    
+    # logging.config.fileConfig(normcase(normpath("conf")) + os.sep + "logging.conf")
     logger = logging.getLogger(__name__)
+
     
     """ Database configuration """
     print("Loading database...")
