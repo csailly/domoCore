@@ -5,6 +5,8 @@ Created on 22 mai 2014
 '''
 
 import logging
+import subprocess
+
 from os.path import os
 
 from com.nestof.domocore import enumeration
@@ -257,13 +259,18 @@ class MCZService(object):
             try:
                 """Envoi de la trame"""
                 os.system(self._config['EMMITTER']['emmitter.command'] + " " + trame._message)
+                
+                # proc = subprocess.Popen([self._config['EMMITTER']['emmitter.command'], trame._message], stdout=subprocess.PIPE, shell=True)
+                # (out, err) = proc.communicate()
+                # print("program output:" + str(err))
+                
+                
                 if startStove : 
                     self._databaseService.setStoveActive(True)
                 else :
                     self._databaseService.setStoveActive(False)
                 self._mczProtocolService.saveTrame(trame)        
             except Exception as e:
-                # TODO ajouter log en base
                 raise
             finally:
                 None
