@@ -8,12 +8,9 @@ Created on 21 mars 2014
 
 import configparser
 import logging
-from os.path import os, sys
-pathname = os.path.dirname(sys.argv[0])
-sys.path.append(os.path.abspath(pathname) + "/../../../")
+from os.path import os, sys, normpath, normcase
 
 from com.nestof.domocore import enumeration
-from com.nestof.domocore import utils
 from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
 from com.nestof.domocore.service.MCZService import MCZService
@@ -36,32 +33,32 @@ if __name__ == '__main__':
     
     """ Loading config file """
     print("Loading config file...")    
-    configFile = "../../../" + configFilename
+    _configFile = normcase(normpath("conf")) + os.sep + configFilename
     
-    if os.path.isfile(configFile):    
+    if os.path.isfile(_configFile):    
         try:
-            with open(configFile) as file:
+            with open(_configFile) as file:
                 pass
         except IOError as e:
-            print ("Unable to open config file " + configFile)  # Does not exist OR no read permissions
+            print ("Unable to open config file " + _configFile)  # Does not exist OR no read permissions
             exit(1)
     else:
-        print("Config file " + configFile + " not found")
+        print("Config file " + _configFile + " not found")
         exit(1)    
         
     config = configparser.ConfigParser()
-    config.read(configFile, 'utf-8')
+    config.read(_configFile, 'utf-8')
     
     """Logger configuration """
     print("Configuring logger...")
-    loggingFilePath = config['LOGGER']['logger.path']
+    loggingFilePath = normcase(normpath(config['LOGGER']['logger.path'])) + os.sep
     loggingFileName = config['LOGGER']['logger.filename']    
     logging.basicConfig(filename=loggingFilePath + loggingFileName, format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
     logger = logging.getLogger(__name__)
     
     """ Database configuration """
     print("Loading database...")
-    databasePath = config['DATABASE']['database.path']
+    databasePath = normcase(normpath(config['DATABASE']['database.path'])) + os.sep
     databaseFilename = config['DATABASE']['database.filename']
 
     try:
@@ -83,7 +80,7 @@ if __name__ == '__main__':
         print("Launch automatique mode...")
         mczService.launchAuto()
     elif (configurationPoele == enumeration.ConfigurationPeole().manuel) :
-        print("Launch manuel mode...")
+        print("Launch manual mode...")
         mczService.launchManu()
     else:
         print("Launch stop mode...")
