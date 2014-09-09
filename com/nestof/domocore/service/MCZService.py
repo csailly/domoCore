@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 22 mai 2014
 
@@ -5,9 +6,8 @@ Created on 22 mai 2014
 '''
 
 import logging
-import subprocess
-
 from os.path import os
+import subprocess
 
 from com.nestof.domocore import enumeration
 
@@ -253,12 +253,12 @@ class MCZService(object):
         print("  Temps écoulé : " + str(lastTrameElapsesTime) + " minutes")
     
     
-        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self._config['EMMITTER']['emmitter.same.trame.start.delay'])) or (shutdownStove and lastTrameElapsesTime >= float(self._config['EMMITTER']['emmitter.same.trame.stop.delay']))))) :
+        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self._config.get('EMMITTER','emmitter.same.trame.start.delay'))) or (shutdownStove and lastTrameElapsesTime >= float(self._config.get('EMMITTER','emmitter.same.trame.stop.delay')))))) :
             """ Ici trame différente de la précédente ou Trame de mise en marche avec un délai >= 15 min ou Trame de mise en arrêt avec un délai >= 5 min  """
             print("  On envoie")                
             try:
                 """Envoi de la trame"""
-                os.system(self._config['EMMITTER']['emmitter.command'] + " " + trame._message)
+                os.system(self._config.get('EMMITTER','emmitter.command') + " " + trame._message)
                 
                 # proc = subprocess.Popen([self._config['EMMITTER']['emmitter.command'], trame._message], stdout=subprocess.PIPE, shell=True)
                 # (out, err) = proc.communicate()

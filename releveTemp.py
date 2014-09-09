@@ -6,14 +6,13 @@ Created on 21 mars 2014
 '''
 
 
-import configparser
+
 import logging
 import logging.config
 from os.path import os, sys, normpath, normcase
 
-
-from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore import utils
+from com.nestof.domocore.service.DatabaseService import DatabaseService
 
 
 if __name__ == '__main__':
@@ -23,17 +22,19 @@ if __name__ == '__main__':
         configFilename = 'domocore.cfg'
         from com.nestof.domocore.service.TempService import TempService
         tempService = TempService()
+        from ConfigParser import ConfigParser
     elif sys.platform.startswith('win') :
         configFilename = 'domocoreDev.cfg'
         from com.nestof.domocore.service.TempServiceDev import TempServiceDev
         tempService = TempServiceDev()
+        from configparser import ConfigParser
     else :
         print("Unknown Operating System : " + sys.platform)
         exit(1)
     
     """ Loading config file """
     print("Loading config file...")    
-    _configFile = normcase(normpath("conf")) + os.sep + configFilename
+    _configFile = normcase(normpath(os.path.dirname(os.path.abspath(__file__))))+os.sep + normcase(normpath("conf")) + os.sep + configFilename
     
     if os.path.isfile(_configFile):    
         try:
@@ -46,13 +47,13 @@ if __name__ == '__main__':
         print("Config file " + _configFile + " not found")
         exit(1)    
         
-    config = configparser.ConfigParser()
-    config.read(_configFile, 'utf-8')
+    config = ConfigParser()
+    config.read(_configFile)
     
     """Logger configuration """
     print("Configuring logger...")
-    loggingFilePath = normcase(normpath(config['LOGGER']['logger.path'])) + os.sep
-    loggingFileName = config['LOGGER']['logger.filename']    
+    loggingFilePath = normcase(normpath(config.get('LOGGER','logger.path'))) + os.sep
+    loggingFileName = config.get('LOGGER','logger.filename')    
     logging.basicConfig(filename=loggingFilePath + loggingFileName, format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
     
     
@@ -63,8 +64,8 @@ if __name__ == '__main__':
     
     """ Database configuration """
     print("Loading database...")
-    databasePath = normcase(normpath(config['DATABASE']['database.path'])) + os.sep
-    databaseFilename = config['DATABASE']['database.filename']
+    databasePath = normcase(normpath(config.get('DATABASE','database.path'))) + os.sep
+    databaseFilename = config.get('DATABASE','database.filename')
 
     try:
         with open(databasePath + databaseFilename) as file:
