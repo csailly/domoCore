@@ -10,6 +10,9 @@ class HistoTemp(object):
     classdocs
     '''
     tableName = 'histo_temp'
+    colDate = 'date'
+    colTime = 'heure'
+    colTemp = 'temp'
 
     def __init__(self):
         '''
@@ -18,5 +21,7 @@ class HistoTemp(object):
         self.date = None
         self.heure = None
         self.temp = None
+        
+
         
         

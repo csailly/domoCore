@@ -23,7 +23,7 @@ def binaryStringToHex(chaine):
     for bit in chaine:        
         temp += str(bit)
         if(len(temp) == 4):
-            hexString += hex(int(temp,2))[2:]
+            hexString += hex(int(temp, 2))[2:]
             temp = ''
     return hexString.upper()
     
@@ -31,6 +31,16 @@ def binaryStringToHex(chaine):
 def getCurrentDateTime():
     """Return the current dateTime"""
     return datetime.fromtimestamp(time.time())
+
+def getCurrentDate():
+    """Return the current date"""
+    """Ex. 2014-09-09"""
+    return datetime.now().strftime("%Y-%m-%d")
+
+def getCurrentTime():
+    """Return the current time"""
+    """Ex. 13:19:24"""
+    return datetime.now().strftime("%H:%M:%S")
 
 def intToBin3(intValue):
     """Return the binary representation of the int value, with 3 bits length"""

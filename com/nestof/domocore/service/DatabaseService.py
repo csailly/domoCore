@@ -4,11 +4,13 @@ Created on 6 avr. 2014
 
 @author: nestof
 '''
+from com.nestof.domocore import enumeration
 from com.nestof.domocore.dao.ModeDao import ModeDao
 from com.nestof.domocore.dao.ParameterDao import ParameterDao
 from com.nestof.domocore.dao.PeriodDao import PeriodDao
+from com.nestof.domocore.dao.HistoTempDao import HistoTempDao
 from com.nestof.domocore.domain.Mode import Mode
-from com.nestof.domocore import enumeration
+from com.nestof.domocore.domain.HistoTemp import HistoTemp
 
 
 class DatabaseService(object):
@@ -24,7 +26,8 @@ class DatabaseService(object):
         self._database = database
         self._periodDao = PeriodDao(database)
         self._modeDao = ModeDao(database)
-        self._parametrageDao = ParameterDao(database)        
+        self._parametrageDao = ParameterDao(database)
+        self._histoTempDao = HistoTempDao(database)    
         
     def findCurrentMode(self):
         """ Return the active mode """
@@ -90,4 +93,12 @@ class DatabaseService(object):
     
     def getOrdreManu(self):
         return enumeration.OrdreManuel().getEnum(self._parametrageDao.getValue('ORDRE_MANU'))
+    
+    def saveTemp(self, date, time, temp):
+        histoTemp = HistoTemp()
+        histoTemp.date = date
+        histoTemp.heure = time
+        histoTemp.temp = temp
+        
+        self._histoTempDao.save(histoTemp)
         
