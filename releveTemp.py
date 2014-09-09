@@ -11,10 +11,8 @@ import logging
 import logging.config
 from os.path import os, sys, normpath, normcase
 
-from com.nestof.domocore import enumeration
+
 from com.nestof.domocore.service.DatabaseService import DatabaseService
-from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
-from com.nestof.domocore.service.MCZService import MCZService
 from com.nestof.domocore import utils
 
 
