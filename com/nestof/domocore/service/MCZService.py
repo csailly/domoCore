@@ -253,7 +253,9 @@ class MCZService(object):
         self._logger.debug("  Temps écoulé : " + str(lastTrameElapsesTime) + " minutes")
     
         lastPowerOffElapsedTime = self._mczProtocolService.getLastPowerOffElapsedTime()
-        if (shutdownStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime > float(self._config.get('EMMITTER', 'emmitter.stop.order.duration'))):
+            
+        if (shutdownStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime > float(self._config.get('EMMITTER', 'emmitter.stop.order.duration'))):            
+            self._logger.debug("lastPowerOffElapsedTime : " + lastPowerOffElapsedTime)
             return
             
         if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self._config.get('EMMITTER', 'emmitter.same.trame.start.delay'))) or (shutdownStove and lastTrameElapsesTime >= float(self._config.get('EMMITTER', 'emmitter.same.trame.stop.delay')))))) :

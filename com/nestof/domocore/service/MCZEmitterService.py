@@ -57,5 +57,7 @@ class MCZEmitterService(object):
             sleep(self.dureeFront)
             RPIO.output(self.txPin, True)
             sleep(self.dureeFront)
-            
+
+if __name__ == '__main__':
+    None      
         
