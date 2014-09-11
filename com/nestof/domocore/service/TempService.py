@@ -26,5 +26,5 @@ class TempService(object):
         return temp
   
 if __name__ == '__main__':
-    tempServiceDev = TempServiceDev()
-    print(tempServiceDev.readTemp())      
+    tempService = TempService()
+    print(tempService.readTemp())      

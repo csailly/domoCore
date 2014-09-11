@@ -73,7 +73,7 @@ if __name__ == '__main__':
         with open(databasePath + databaseFilename) as file:
             pass
     except IOError as e:
-        print("Unable to open database " + databasePath + databaseFilename)  # Does not exist OR no read permissions
+        logging.error("Unable to open database " + databasePath + databaseFilename)  # Does not exist OR no read permissions
         exit(1)
 
     """ Services """    
@@ -85,13 +85,13 @@ if __name__ == '__main__':
     configurationPoele = databaseService.getConfig()
 
     if (configurationPoele == enumeration.ConfigurationPeole().automatique) :
-        print("Launch automatique mode...")
+        print("Launch Automatique Mode...")
         mczService.launchAuto()
     elif (configurationPoele == enumeration.ConfigurationPeole().manuel) :
-        print("Launch manual mode...")
+        print("Launch Manual Mode...")
         mczService.launchManu()
     else:
-        print("Launch stop mode...")
+        print("Launch Stop Mode...")
         mczService.launchStop()
         
         
