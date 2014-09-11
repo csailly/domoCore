@@ -34,7 +34,7 @@ if __name__ == '__main__':
     
     """ Loading config file """
     print("Loading config file...")    
-    _configFile = normcase(normpath(os.path.dirname(os.path.abspath(__file__))))+os.sep + normcase(normpath("conf")) + os.sep + configFilename
+    _configFile = normcase(normpath(os.path.dirname(os.path.abspath(__file__)))) + os.sep + normcase(normpath("conf")) + os.sep + configFilename
     
     if os.path.isfile(_configFile):    
         try:
@@ -52,8 +52,8 @@ if __name__ == '__main__':
     
     """Logger configuration """
     print("Configuring logger...")
-    loggingFilePath = normcase(normpath(config.get('LOGGER','logger.path'))) + os.sep
-    loggingFileName = config.get('LOGGER','logger.filename')    
+    loggingFilePath = normcase(normpath(config.get('LOGGER', 'logger.path'))) + os.sep
+    loggingFileName = config.get('LOGGER', 'logger.filename')    
     logging.basicConfig(filename=loggingFilePath + loggingFileName, format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
     
     
@@ -64,8 +64,8 @@ if __name__ == '__main__':
     
     """ Database configuration """
     print("Loading database...")
-    databasePath = normcase(normpath(config.get('DATABASE','database.path'))) + os.sep
-    databaseFilename = config.get('DATABASE','database.filename')
+    databasePath = normcase(normpath(config.get('DATABASE', 'database.path'))) + os.sep
+    databaseFilename = config.get('DATABASE', 'database.filename')
 
     try:
         with open(databasePath + databaseFilename) as file:
@@ -84,3 +84,5 @@ if __name__ == '__main__':
     
     """Save current temp"""
     databaseService.saveTemp(date, time, temp)
+    
+    print(temp)

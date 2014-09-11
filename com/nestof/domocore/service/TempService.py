@@ -20,8 +20,11 @@ class TempService(object):
         self.__address = 0x48
         
     def readTemp(self):
-        tmp = self.__bus.read_word_data(self.__address , 0x00 )
+        tmp = self.__bus.read_word_data(self.__address , 0x00)
         Lo = (tmp & 0xff00) >> 8 ;    Hi = (tmp & 0x00ff)
-        temp  = ((( Hi * 256 ) + Lo) >> 4 ) * 0.0625      
+        temp = (((Hi * 256) + Lo) >> 4) * 0.0625      
         return temp
-        
+  
+if __name__ == '__main__':
+    tempServiceDev = TempServiceDev()
+    print(tempServiceDev.readTemp())      
