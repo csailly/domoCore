@@ -137,11 +137,11 @@ class HistoTrameMczDao(object):
             db = sqlite3.connect(self._database)
             cursor = db.cursor()
             
-            requete = 'SELECT * FROM ' + HistoTrameMCZ.tableName
-            requete += ' WHERE '
-            requete += HistoTrameMCZ.colOrderName + ' = 0'
-            requete += ' order by ' + HistoTrameMCZ.colSendDateName + ' DESC '
-            requete += ' limit 1 ' 
+            requete = 'SELECT * FROM ' + HistoTrameMCZ.tableName + ' h1' 
+            requete += ' WHERE h1.' + HistoTrameMCZ.colOrderName + ' = 0 and h1.' + HistoTrameMCZ.colSendDateName + ' > ' 
+            requete += ' (SELECT h.' + HistoTrameMCZ.colSendDateName + ' FROM ' + HistoTrameMCZ.tableName + ' h WHERE h.' + HistoTrameMCZ.colOrderName + ' <> 0 order by h.' + HistoTrameMCZ.colSendDateName + ' desc limit 1) ' 
+            requete += ' ORDER BY h1.' + HistoTrameMCZ.colSendDateName + ' ASC limit 1 '
+             
             
             cursor.execute(requete)
     

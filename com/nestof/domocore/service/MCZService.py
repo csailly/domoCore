@@ -142,7 +142,9 @@ class MCZService(object):
                         (not onPeriode and onForced and not offForced and tempForcedZone3) :
                     shutdownStove = True
             else :
-                shutdownStove = True 
+                lastPowerOffElapsedTime = self._mczProtocolService.getLastPowerOffElapsedTime()
+                if (lastPowerOffElapsedTime == None or lastPowerOffElapsedTime > float(self._config.get('EMMITTER', 'emmitter.stop.order.duration'))):
+                    shutdownStove = True 
             
         if shutdownStove :
             trameEtat = enumeration.Etat.off
@@ -152,6 +154,7 @@ class MCZService(object):
                 niveauVentilation = lastTrame._ventilation
             if offForced and stoveIsOn:
                 trameActionneur = enumeration.Actionneur.utilisateur
+
     
         print("  startStove      : " + str(startStove))
         print("  shutdownStove   : " + str(shutdownStove))
@@ -215,14 +218,16 @@ class MCZService(object):
         
         """Stop cases"""
         if manualOrder == enumeration.OrdreManuel.arret or (not startStove):
-            shutdownStove = True
-            trameEtat = enumeration.Etat.off
-            lastTrame = self._mczProtocolService.getLastTrame()
-            if lastTrame != None :
-                niveauPuissance = lastTrame._puissance
-                niveauVentilation = lastTrame._ventilation
-            if stoveIsOn and not tempManualZone3:
-                trameActionneur = enumeration.Actionneur.utilisateur
+            lastPowerOffElapsedTime = self._mczProtocolService.getLastPowerOffElapsedTime()
+            if (lastPowerOffElapsedTime == None or lastPowerOffElapsedTime > float(self._config.get('EMMITTER', 'emmitter.stop.order.duration'))):
+                shutdownStove = True
+                trameEtat = enumeration.Etat.off
+                lastTrame = self._mczProtocolService.getLastTrame()
+                if lastTrame != None :
+                    niveauPuissance = lastTrame._puissance
+                    niveauVentilation = lastTrame._ventilation
+                if stoveIsOn and not tempManualZone3:
+                    trameActionneur = enumeration.Actionneur.utilisateur
             
         print("  startStove      : " + str(startStove))
         print("  shutdownStove   : " + str(shutdownStove))
@@ -253,12 +258,12 @@ class MCZService(object):
         print("  Temps écoulé : " + str(lastTrameElapsesTime) + " minutes")
     
     
-        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self._config.get('EMMITTER','emmitter.same.trame.start.delay'))) or (shutdownStove and lastTrameElapsesTime >= float(self._config.get('EMMITTER','emmitter.same.trame.stop.delay')))))) :
+        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self._config.get('EMMITTER', 'emmitter.same.trame.start.delay'))) or (shutdownStove and lastTrameElapsesTime >= float(self._config.get('EMMITTER', 'emmitter.same.trame.stop.delay')))))) :
             """ Ici trame différente de la précédente ou Trame de mise en marche avec un délai >= 15 min ou Trame de mise en arrêt avec un délai >= 5 min  """
             print("  On envoie")                
             try:
                 """Envoi de la trame"""
-                os.system(self._config.get('EMMITTER','emmitter.command') + " " + trame._message)
+                os.system(self._config.get('EMMITTER', 'emmitter.command') + " " + trame._message)
                 
                 # proc = subprocess.Popen([self._config['EMMITTER']['emmitter.command'], trame._message], stdout=subprocess.PIPE, shell=True)
                 # (out, err) = proc.communicate()
