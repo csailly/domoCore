@@ -44,15 +44,15 @@ class DatabaseService(object):
     def findForcedMode(self):
         mode = Mode()  # TODO Récupérer le mode forcé
         mode._libelle = "Forcé"
-        mode._cons = 19
-        mode._max = 22
+        mode._cons = float(self._parametrageDao.getValue('TEMP_CONSIGNE_MARCHE_FORCEE'))
+        mode._max = float(self._parametrageDao.getValue('TEMP_MAXI_MARCHE_FORCEE'))
         return mode
     
     def findManualMode(self):
         mode = Mode()  # TODO Récupérer le mode manuel
         mode._libelle = "Manuel"
-        mode._cons = 19
-        mode._max = 22
+        mode._cons = float(self._parametrageDao.getValue('TEMP_CONSIGNE_MARCHE_FORCEE'))
+        mode._max = float(self._parametrageDao.getValue('TEMP_MAXI_MARCHE_FORCEE'))
         return mode
     
     def getStoveActive(self):

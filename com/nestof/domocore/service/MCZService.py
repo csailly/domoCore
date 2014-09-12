@@ -250,22 +250,30 @@ class MCZService(object):
         lastTrameElapsesTime = self._mczProtocolService.getLastTrameElapsedTime()
             
         self._logger.debug("  Dernière trame identique : " + str(lastTrameIsSame))
-        self._logger.debug("  Temps écoulé : " + str(lastTrameElapsesTime) + " minutes")
+        self._logger.debug("  Durée depuis dernièr envoi : " + str(lastTrameElapsesTime))
     
         lastPowerOffElapsedTime = self._mczProtocolService.getLastPowerOffElapsedTime()
             
-        if (shutdownStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime > float(self._config.get('EMMITTER', 'emmitter.stop.order.duration'))):            
-            self._logger.debug("lastPowerOffElapsedTime : " + lastPowerOffElapsedTime)
+        if (shutdownStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime > float(self._config.get('EMITTER', 'emitter.stopOrder.max.duration'))):            
+            self._logger.debug("  Durée depuis dernière extinction : " + str(lastPowerOffElapsedTime))
+            self._logger.debug("  Durée des envois d'ordre d'extinction : " + self._config.get('EMITTER', 'emitter.stopOrder.max.duration'))
+            self._logger.debug("  On n'envoie pas")
+            return
+        
+        if (startStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime < float(self._config.get('EMITTER', 'emitter.powerOff.min.duration'))): 
+            self._logger.debug("  Durée depuis dernière extinction : " + str(lastPowerOffElapsedTime))
+            self._logger.debug("  Délai d'allumage après extinction : " + self._config.get('EMITTER', 'emitter.powerOff.min.duration'))
+            self._logger.debug("  On n'envoie pas")
             return
             
-        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self._config.get('EMMITTER', 'emmitter.same.trame.start.delay'))) or (shutdownStove and lastTrameElapsesTime >= float(self._config.get('EMMITTER', 'emmitter.same.trame.stop.delay')))))) :
+        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self._config.get('EMITTER', 'emitter.same.trame.start.delay'))) or (shutdownStove and lastTrameElapsesTime >= float(self._config.get('EMITTER', 'emitter.same.trame.stop.delay')))))) :
             """ Ici trame différente de la précédente ou Trame de mise en marche avec un délai >= 15 min ou Trame de mise en arrêt avec un délai >= 5 min  """
             self._logger.debug("  On envoie")                
             try:
                 """Envoi de la trame"""
-                os.system(self._config.get('EMMITTER', 'emmitter.command') + " " + trame._message)
+                os.system(self._config.get('EMITTER', 'emitter.command') + " " + trame._message)
                 
-                # proc = subprocess.Popen([self._config['EMMITTER']['emmitter.command'], trame._message], stdout=subprocess.PIPE, shell=True)
+                # proc = subprocess.Popen([self._config['EMITTER']['emitter.command'], trame._message], stdout=subprocess.PIPE, shell=True)
                 # (out, err) = proc.communicate()
                 # print("program output:" + str(err))
                 
