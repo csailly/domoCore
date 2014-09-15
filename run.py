@@ -14,6 +14,7 @@ from logging.handlers import TimedRotatingFileHandler
 from os.path import os, sys, normpath, normcase
 
 from com.nestof.domocore import enumeration
+from com.nestof.domocore import utils
 from com.nestof.domocore.service.DatabaseService import DatabaseService
 from com.nestof.domocore.service.MCZProtocolService import MCZProtocolService
 from com.nestof.domocore.service.MCZService import MCZService
@@ -56,21 +57,17 @@ if __name__ == '__main__':
     
     """Logger configuration """
     print("Configuring logger...")
-    
-    
-    
-    
     loggingFilePath = normcase(normpath(config.get('LOGGER', 'logger.path'))) + os.sep
     loggingFileName = config.get('LOGGER', 'logger.filename')
     timedRotatingFileHandler = TimedRotatingFileHandler(loggingFilePath + loggingFileName, 'midnight', interval=1, backupCount=0, encoding='UTF-8', delay=True)       
     logging.basicConfig(handlers=[timedRotatingFileHandler], format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
-
-    
-    
-    
     # logging.config.fileConfig(normcase(normpath("conf")) + os.sep + "logging.conf")
     logger = logging.getLogger(__name__)
 
+
+    logger.debug("****************************************************************************")
+    logger.debug("**                       " + str(utils.getCurrentDateTime()) + "                       **")
+    logger.debug("****************************************************************************")
     
     """ Database configuration """
     print("Loading database...")

@@ -250,7 +250,7 @@ class MCZService(object):
         lastTrameElapsesTime = self._mczProtocolService.getLastTrameElapsedTime()
             
         self._logger.debug("  Dernière trame identique : " + str(lastTrameIsSame))
-        self._logger.debug("  Durée depuis dernièr envoi : " + str(lastTrameElapsesTime))
+        self._logger.debug("  Durée depuis dernier envoi : " + str(lastTrameElapsesTime))
     
         lastPowerOffElapsedTime = self._mczProtocolService.getLastPowerOffElapsedTime()
             
