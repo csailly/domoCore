@@ -9,6 +9,7 @@ Created on 21 mars 2014
 
 import logging
 import logging.config
+from logging.handlers import TimedRotatingFileHandler
 from os.path import os, sys, normpath, normcase
 
 from com.nestof.domocore import utils
