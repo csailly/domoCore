@@ -54,7 +54,8 @@ if __name__ == '__main__':
     print("Configuring logger...")
     loggingFilePath = normcase(normpath(config.get('LOGGER', 'logger.path'))) + os.sep
     loggingFileName = config.get('LOGGER', 'logger.filename')    
-    logging.basicConfig(filename=loggingFilePath + loggingFileName, format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
+    timedRotatingFileHandler = TimedRotatingFileHandler(loggingFilePath + loggingFileName, 'midnight', interval=1, backupCount=0, encoding='UTF-8', delay=True)       
+    logging.basicConfig(handlers=[timedRotatingFileHandler], format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
     
     
     

@@ -9,6 +9,8 @@ Created on 21 mars 2014
 
 import logging
 import logging.config
+from logging.handlers import TimedRotatingFileHandler
+
 from os.path import os, sys, normpath, normcase
 
 from com.nestof.domocore import enumeration
@@ -54,9 +56,14 @@ if __name__ == '__main__':
     
     """Logger configuration """
     print("Configuring logger...")
+    
+    
+    
+    
     loggingFilePath = normcase(normpath(config.get('LOGGER', 'logger.path'))) + os.sep
-    loggingFileName = config.get('LOGGER', 'logger.filename')    
-    logging.basicConfig(filename=loggingFilePath + loggingFileName, format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
+    loggingFileName = config.get('LOGGER', 'logger.filename')
+    timedRotatingFileHandler = TimedRotatingFileHandler(loggingFilePath + loggingFileName, 'midnight', interval=1, backupCount=0, encoding='UTF-8', delay=True)       
+    logging.basicConfig(handlers=[timedRotatingFileHandler], format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
 
     
     
