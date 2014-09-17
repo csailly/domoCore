@@ -14,11 +14,10 @@
 
 *.pyc
 /.pydevproject
-
 /.settings
 /.project
 
 /domotique.sqlite
 
-/domocore.log
+*.log
 /log/
