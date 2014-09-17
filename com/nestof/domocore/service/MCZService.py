@@ -30,7 +30,7 @@ class MCZService(object):
 
         
     def launchAuto(self):
-        self._logger.debug("---------- Launching Auto Mode ----------")
+        self._logger.debug("---------- Launching Auto Mode ----------")        
         
         """ Current Mode"""    
         currentMode = self._databaseService.findCurrentMode()
@@ -41,11 +41,11 @@ class MCZService(object):
         lastModeId = self._databaseService.getLastModeId()   
     
         """ Stove state"""
-        stoveIsOn = self._databaseService.getStoveActive()    
+        stoveIsOn = self._databaseService.isStoveActive()    
         
         """ Forced flags""" 
-        onForced = self._databaseService.getForcedOn()
-        offForced = self._databaseService.getForcedOff()
+        onForced = self._databaseService.isForcedOn()
+        offForced = self._databaseService.isForcedOff()
         
         """ Forced mode """
         forcedMode = self._databaseService.findForcedMode()
@@ -180,9 +180,9 @@ class MCZService(object):
         manualOrder = self._databaseService.getOrdreManu()
         
         """Is stove On """
-        stoveIsOn = self._databaseService.getStoveActive()
+        stoveIsOn = self._databaseService.isStoveActive()
         
-        """ The current temperature """    
+        " The current temperature """    
         currentTemp = self._tempService.readTemp()
         
         """ Parametered temperatures """
@@ -203,7 +203,7 @@ class MCZService(object):
         
         
         """Start/ Continue cases """
-        if manualOrder == enumeration.OrdreManuel.marche and tempManualZone1 or (stoveIsOn and tempManualZone2):
+        if manualOrder == enumeration.OrdreManuel.marche and (tempManualZone1 or (stoveIsOn and tempManualZone2)):
             niveauPuissance = self._mczProtocolService.getNiveauPuissance(currentTemp, manualMode._cons);
             startStove = True
             trameEtat = enumeration.Etat.on
@@ -228,13 +228,32 @@ class MCZService(object):
                       
         if startStove or shutdownStove :
             self.constructAndSendTrame(startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation)
+                    
+        self._databaseService.saveOrdreManu(self._databaseService.isStoveActive())
 
-            
         
     def launchStop(self):
         self._logger.debug("---------- Launching Stop Mode ----------")
         """Envoyer odre Off"""
-        None
+        niveauPuissance = enumeration.NiveauPuissance.niveau1
+        niveauVentilation = enumeration.NiveauVentilation.auto
+        trameMode = enumeration.Mode.automatique
+        trameEtat = enumeration.Etat.off
+        trameActionneur = enumeration.Actionneur.systeme
+        
+        
+        """Is stove On """
+        stoveIsOn = self._databaseService.isStoveActive()
+        if stoveIsOn :
+            trameActionneur = enumeration.Actionneur.utilisateur
+            
+        lastTrame = self._mczProtocolService.getLastTrame()
+        if lastTrame != None :
+            niveauPuissance = lastTrame._puissance
+            niveauVentilation = lastTrame._ventilation
+                
+        self.constructAndSendTrame(False, True, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation)
+
         
     def constructAndSendTrame(self, startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation):
         self._logger.debug("  **Construction trame**")
@@ -266,7 +285,8 @@ class MCZService(object):
             self._logger.debug("  On n'envoie pas")
             return
             
-        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self._config.get('EMITTER', 'emitter.same.trame.start.delay'))) or (shutdownStove and lastTrameElapsesTime >= float(self._config.get('EMITTER', 'emitter.same.trame.stop.delay')))))) :
+        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self._config.get('EMITTER', 'emitter.same.trame.start.delay'))) \
+                                                          or (shutdownStove and lastTrameElapsesTime >= float(self._config.get('EMITTER', 'emitter.same.trame.stop.delay')))))) :
             """ Ici trame différente de la précédente ou Trame de mise en marche avec un délai >= 15 min ou Trame de mise en arrêt avec un délai >= 5 min  """
             self._logger.debug("  On envoie")                
             try:

@@ -42,20 +42,20 @@ class DatabaseService(object):
         return mode
     
     def findForcedMode(self):
-        mode = Mode()  # TODO Récupérer le mode forcé
+        mode = Mode()
         mode._libelle = "Forcé"
         mode._cons = float(self._parametrageDao.getValue('TEMP_CONSIGNE_MARCHE_FORCEE'))
         mode._max = float(self._parametrageDao.getValue('TEMP_MAXI_MARCHE_FORCEE'))
         return mode
     
     def findManualMode(self):
-        mode = Mode()  # TODO Récupérer le mode manuel
+        mode = Mode()
         mode._libelle = "Manuel"
         mode._cons = float(self._parametrageDao.getValue('TEMP_CONSIGNE_MARCHE_FORCEE'))
         mode._max = float(self._parametrageDao.getValue('TEMP_MAXI_MARCHE_FORCEE'))
         return mode
     
-    def getStoveActive(self):
+    def isStoveActive(self):
         return self._parametrageDao.getValue('POELE_ETAT') == 'ON'
     
     def setStoveActive(self, active):
@@ -64,10 +64,10 @@ class DatabaseService(object):
         else :
             self._parametrageDao.saveValue('POELE_ETAT', 'OFF')
     
-    def getForcedOn(self):
+    def isForcedOn(self):
         return self._parametrageDao.getValue('POELE_MARCHE_FORCEE') == 'TRUE'
     
-    def getForcedOff(self):
+    def isForcedOff(self):
         return self._parametrageDao.getValue('POELE_ARRET_FORCE') == 'TRUE'
     
     def setForcedOn(self, onForced):
@@ -93,6 +93,12 @@ class DatabaseService(object):
     
     def getOrdreManu(self):
         return enumeration.OrdreManuel().getEnum(self._parametrageDao.getValue('ORDRE_MANU'))
+    
+    def saveOrdreManu(self, on):
+        if on :
+            self._parametrageDao.saveValue('ORDRE_MANU', 'ON')
+        else :
+            self._parametrageDao.saveValue('ORDRE_MANU', 'OFF')
     
     def saveTemp(self, date, time, temp):
         histoTemp = HistoTemp()
