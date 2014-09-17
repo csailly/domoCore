@@ -54,9 +54,10 @@ if __name__ == '__main__':
     """Logger configuration """
     print("Configuring logger...")
     loggingFilePath = normcase(normpath(config.get('LOGGER', 'logger.path'))) + os.sep
-    loggingFileName = config.get('LOGGER', 'logger.filename')    
+    loggingFileName = config.get('LOGGER', 'logger.releve.filename')    
     timedRotatingFileHandler = TimedRotatingFileHandler(loggingFilePath + loggingFileName, 'midnight', interval=1, backupCount=0, encoding='UTF-8', delay=True)       
-    logging.basicConfig(handlers=[timedRotatingFileHandler], format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
+    logging.basicConfig(filename=loggingFilePath + loggingFileName, format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
+    #logging.basicConfig(handlers=[timedRotatingFileHandler], format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
     
     
     
@@ -87,4 +88,4 @@ if __name__ == '__main__':
     """Save current temp"""
     databaseService.saveTemp(date, time, temp)
     
-    print(temp)
+    logger.debug(temp)
