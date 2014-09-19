@@ -25,7 +25,8 @@ CREATE TABLE "mode" (
 CREATE TABLE "parametrage" (
 	"code" VARCHAR PRIMARY KEY  NOT NULL , 
 	"type" VARCHAR, "valeur" VARCHAR NOT NULL , 
-	"commentaire" VARCHAR);
+	"commentaire" VARCHAR,
+	"valeurs" VARCHAR);
 	
 CREATE TABLE "periode" (
 	"id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , 
