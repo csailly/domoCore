@@ -5,12 +5,12 @@ Created on 6 avr. 2014
 @author: nestof
 '''
 from com.nestof.domocore import enumeration
+from com.nestof.domocore.dao.HistoTempDao import HistoTempDao
 from com.nestof.domocore.dao.ModeDao import ModeDao
 from com.nestof.domocore.dao.ParameterDao import ParameterDao
 from com.nestof.domocore.dao.PeriodDao import PeriodDao
-from com.nestof.domocore.dao.HistoTempDao import HistoTempDao
-from com.nestof.domocore.domain.Mode import Mode
 from com.nestof.domocore.domain.HistoTemp import HistoTemp
+from com.nestof.domocore.domain.Mode import Mode
 
 
 class DatabaseService(object):
@@ -107,4 +107,16 @@ class DatabaseService(object):
         histoTemp.temp = temp
         
         self._histoTempDao.save(histoTemp)
+        
+    def getEmitterSameStartTrameDelay(self):
+        return self._parametrageDao.getValue('EMITTER_SAME_START_TRAME_DELAY')
+    
+    def getEmitterSameStopTrameDelay(self):
+        return self._parametrageDao.getValue('EMITTER_SAME_STOP_TRAME_DELAY')
+    
+    def getEmitterStopTrameSendDuration(self):
+        return self._parametrageDao.getValue('EMITTER_STOP_TRAME_SEND_DURATION')
+    
+    def getEmitterOffMinDuration(self):
+        return self._parametrageDao.getValue('EMITTER_OFF_MIN_DURATION')
         
