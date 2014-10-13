@@ -41,6 +41,9 @@ class DatabaseService(object):
             
         return mode
     
+    def findCurrentPeriode(self):
+        return self._periodDao.findCurrent()
+    
     def findForcedMode(self):
         mode = Mode()
         mode._libelle = "Forcé"

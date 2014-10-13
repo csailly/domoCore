@@ -9,7 +9,10 @@ import logging
 from os.path import os
 import subprocess
 
-from com.nestof.domocore import enumeration
+from datetime import datetime
+
+from com.nestof.domocore import  enumeration, utils
+
 
 class MCZService(object):
     '''
@@ -124,12 +127,27 @@ class MCZService(object):
         startStove = False
         """ Arrêt du poêle ou maintient éteint """
         shutdownStove = False
+        
+        
+        
+        
                 
         if currentModeDefined:
             """ Un mode est défini """
-            if (not onForced and not offForced and tempZone1) or \
+            
+            minutesToEndPeriode = None
+            currentPeriode = self._databaseService.findCurrentPeriode()
+            if currentPeriode != None and currentPeriode._endHour != None:          
+                minutesToEndPeriode = datetime.strptime(currentPeriode._endHour, "%H:%M") - datetime.strptime(utils.getCurrentTime(), "%H:%M:%S")
+                minutesToEndPeriode = (minutesToEndPeriode.seconds) / 60
+
+            if (not stoveIsOn and minutesToEndPeriode != None and minutesToEndPeriode < 30):
+                """ Le poêle est arrété et la période se termine dans moins de 30 minutes """
+                """ => On n'allume pas le poêle """
+                None            
+            elif ((not onForced and not offForced and tempZone1) or \
                     (not onForced and not offForced and tempZone2 and stoveIsOn) or \
-                    (not stoveIsOn and onForced and tempZone2):
+                    (not stoveIsOn and onForced and tempZone2)):
                 """ Pas d'indicateurs de forçage de définis et en zone de température 1 """
                 """ OU Pas d'indicateurs de forçade de définis et en zone de température 2 et poêle déjà en marche """
                 """ OU Indicateur de marche forcée défini et en zone de température 2 et poêle en arrêt """
