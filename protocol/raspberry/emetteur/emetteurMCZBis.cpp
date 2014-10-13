@@ -14,13 +14,9 @@ Licence : CC by sa
 
 g++ emetteurMCZ.cpp  -o emetteurMCZ -lwiringPi
 
-sudo ./emetteur <txPin> <commande> <puissance> <ventilation>
+sudo ./emetteur <txPin> <trame>
 
-<commande> -> 2 = on, 0 = off, 4 = auto
-<puissance> -> puissance de chauffe de 1 à 5
-<ventilation> -> ventilation de 1 à 6. 6 = auto.
-
-sudo ./emetteur 0 0 2 6
+sudo ./emetteur 0 1001101001....01100101
 
 */
 
@@ -36,38 +32,9 @@ int dureeInterMessage = 5080;
 //Nombre d'envois du message
 int nbEnvois = 5;
 
-
-unsigned long emetteurCode1=0x97d;
-unsigned long emetteurCode2=0x999;
-unsigned long emetteurCode3=0x813;
-unsigned long code1=0xca9;
-unsigned long code2=0xaeb;
-//code1	code2
-//0xca9	0xaeb
-//0x8ab	0xeab
-//0x829	0xf21
-//0xc2b	0xb61
-
-int txPin;						// N° du pin utilisé pour l'envoi des données
+int txPin;							// N° du pin utilisé pour l'envoi des données
 
 bool bit2Message[7][12]={};
-
-bool* bit2EmetteurCode1=NULL;		// 12 bits Identifiant partie 1 émetteur
-bool* bit2EmetteurCode2=NULL;		// 12 bits Identifiant partie 2 émetteur
-bool* bit2EmetteurCode3=NULL;		// 12 bits Identifiant partie 3 émetteur
-bool* bit2Donnee1=NULL;			// 12 bits Donnée 1
-bool* bit2Code1=NULL;				// 12 bits Code 1
-bool* bit2Donnee2=NULL;			// 12 bits Donnée 2
-bool* bit2Code2=NULL;				// 12 bits Code 2
-
-bool bit2Puissance[3] = {};			// 3 bits puissance, de 1 à 5
-bool bit2Ventilation[3] = {};		// 3 bits ventilation de 1 à 6
-bool bit2Mode[3] = {0,0,0};			// 3 bits on = 2, off = 0, auto = 4
-
-void log(string a){
-	//Dé commenter pour avoir les logs
-	cout << a << endl;
-}
 
 //Fonction de passage du programme en temps réel (car la réception se joue a la micro seconde près)
 void scheduler_realtime() {
@@ -84,32 +51,6 @@ void scheduler_standard() {
 	p.__sched_priority = 0;
 	if( sched_setscheduler( 0, SCHED_OTHER, &p ) == -1 ) {
 		perror("Failed to switch to normal scheduler.");
-	}
-}
-
-//Calcul le nombre 2^chiffre indiqué, fonction utilisé par itob pour la conversion décimal/binaire
-unsigned long power2(int power){
-	unsigned long resultat=1;
-	for (int i=0; i<power; i++){
-		resultat*=2;
-	}
-	return resultat;
-} 
-
-/*
-* Converti un nombre décimal en binaire.
-* @param dest : tableau de destination
-* @param intValue : la valeur à convertir
-* @param length : le nombre de bits à générer
-*/
-void iToB(bool* dest, unsigned long intValue, int length){
-	for (int i=0; i<length; i++){
-		if ((intValue / power2(length-1-i))==1){
-			intValue-=power2(length-1-i);
-			dest[i]=1;
-		}else{
-			dest[i]=0;
-		}
 	}
 }
 
@@ -130,17 +71,6 @@ void sendBit(bool value) {
 		delayMicroseconds(dureeFront);   
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
 
 int main (int argc, char** argv)
 {

@@ -320,21 +320,26 @@ class MCZService(object):
         self._logger.debug("  Durée depuis dernier envoi : " + str(lastTrameElapsesTime) + " minutes")
     
         lastPowerOffElapsedTime = self._mczProtocolService.getLastPowerOffElapsedTime()
-            
-        if (shutdownStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime > float(self._config.get('EMITTER', 'emitter.stopOrder.max.duration'))):            
-            self._logger.debug("  Durée depuis dernière extinction : " + str(lastPowerOffElapsedTime) + " minutes")
-            self._logger.debug("  Durée des envois d'ordre d'extinction : " + self._config.get('EMITTER', 'emitter.stopOrder.max.duration') + " minutes")
+        
+        emitterSameStartTrameDelay = self._databaseService.getEmitterSameStartTrameDelay()
+        emitterSameStopTrameDelay = self._databaseService.getEmitterSameStopTrameDelay()
+        emitterStopTrameSendDuration = self._databaseService.getEmitterStopTrameSendDuration()
+        emitterOffMinDuration = self._databaseService.getEmitterOffMinDuration()
+        
+        if (shutdownStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime > float(emitterStopTrameSendDuration)):            
+            self._logger.debug("  Durée depuis dernière extinction : " + str(lastPowerOffElapsedTime))
+            self._logger.debug("  Durée des envois d'ordre d'extinction : " + str(emitterStopTrameSendDuration))
             self._logger.debug("  On n'envoie pas")
             return
         
-        if (startStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime < float(self._config.get('EMITTER', 'emitter.powerOff.min.duration'))): 
+        if (startStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime < float(emitterOffMinDuration)): 
             self._logger.debug("  Durée depuis dernière extinction : " + str(lastPowerOffElapsedTime))
-            self._logger.debug("  Délai d'allumage après extinction : " + self._config.get('EMITTER', 'emitter.powerOff.min.duration'))
+            self._logger.debug("  Délai d'allumage après extinction : " + str(emitterOffMinDuration))
             self._logger.debug("  On n'envoie pas")
             return
             
-        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(self._config.get('EMITTER', 'emitter.same.trame.start.delay'))) \
-                                                          or (shutdownStove and lastTrameElapsesTime >= float(self._config.get('EMITTER', 'emitter.same.trame.stop.delay')))))) :
+        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(emitterSameStartTrameDelay)) \
+                                                          or (shutdownStove and lastTrameElapsesTime >= float(emitterSameStopTrameDelay))))) :
             """ Trame précédente différente
                 OU Trame précédente identique ET
                     Allumage et délai envoi entre 2 trames d'allumage identiques écoulé 
@@ -357,6 +362,6 @@ class MCZService(object):
             except Exception as e:
                 raise
             finally:
-                None
+                self._logger.debug("  Trame envoyée")
         else :
             self._logger.debug("  Même trame, délai insuffisant :" + str(lastTrameElapsesTime))      
