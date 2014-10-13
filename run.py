@@ -100,5 +100,5 @@ if __name__ == '__main__':
         print("Launch Stop Mode...")
         mczService.launchStop()
         
-        
+    exit(0)   
 
