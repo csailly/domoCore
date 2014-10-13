@@ -8,4 +8,7 @@ git fetch origin
 git reset --hard origin/master
 git clean -dfx
 
+find . -exec chown nobody {} \;
+find . -exec chgrp nogroup {} \;
+
 exit 0
