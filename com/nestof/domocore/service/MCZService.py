@@ -5,11 +5,10 @@ Created on 22 mai 2014
 @author: nestof
 '''
 
+from datetime import datetime
 import logging
 from os.path import os
 import subprocess
-
-from datetime import datetime
 
 from com.nestof.domocore import  enumeration, utils
 
@@ -129,22 +128,23 @@ class MCZService(object):
         shutdownStove = False
         
         
-        
+        minutesToEndPeriode = None
+        currentPeriode = self._databaseService.findCurrentPeriode()
+        if currentPeriode != None and currentPeriode._endHour != None:          
+            minutesToEndPeriode = datetime.strptime(currentPeriode._endHour, "%H:%M") - datetime.strptime(utils.getCurrentTime(), "%H:%M:%S")
+            minutesToEndPeriode = (minutesToEndPeriode.seconds) / 60
         
                 
         if currentModeDefined:
             """ Un mode est défini """
-            
-            minutesToEndPeriode = None
-            currentPeriode = self._databaseService.findCurrentPeriode()
-            if currentPeriode != None and currentPeriode._endHour != None:          
-                minutesToEndPeriode = datetime.strptime(currentPeriode._endHour, "%H:%M") - datetime.strptime(utils.getCurrentTime(), "%H:%M:%S")
-                minutesToEndPeriode = (minutesToEndPeriode.seconds) / 60
-
             if (not stoveIsOn and minutesToEndPeriode != None and minutesToEndPeriode < 30):
                 """ Le poêle est arrété et la période se termine dans moins de 30 minutes """
                 """ => On n'allume pas le poêle """
-                None            
+                None
+            elif (stoveIsOn and tempZone2 and minutesToEndPeriode != None and minutesToEndPeriode < 30):
+                """ Le poêle est en marche et la période se termine dans moins de 30 minutes et en zone de température 2 """
+                """ => On ne maintient pas l'allumage """
+                None       
             elif ((not onForced and not offForced and tempZone1) or \
                     (not onForced and not offForced and tempZone2 and stoveIsOn) or \
                     (not stoveIsOn and onForced and tempZone2)):
@@ -169,11 +169,13 @@ class MCZService(object):
                 if (not currentModeDefined and not onForced and not offForced) or \
                         (not currentModeDefined and onForced and not offForced and tempForcedZone3) or \
                         (currentModeDefined and not onForced and not offForced and tempZone3) or \
-                        (currentModeDefined and not onForced and offForced) :
+                        (currentModeDefined and not onForced and offForced) or \
+                        (currentModeDefined and tempZone2 and minutesToEndPeriode != None and minutesToEndPeriode < 30) :
                     """ Pas de mode défini et pas d'indicateur de forçage """
                     """ OU Pas de mode défini et indicateur de marche forcée et zone de température 3 """
                     """ OU Mode défini et pas d'indicateur de forçage et zone de température 3 """
                     """ OU Mode défini et indicateur d'arrêt forcé défini """
+                    """ OU La période se termine dans moins de 30 minutes et en zone de température 2 """
                     """ => On éteint """
                     shutdownStove = True
             else :
