@@ -13,6 +13,7 @@ class HistoTemp(object):
     colDate = 'date'
     colTime = 'heure'
     colTemp = 'temp'
+    colSonde = 'sonde'
 
     def __init__(self):
         '''
@@ -21,7 +22,5 @@ class HistoTemp(object):
         self.date = None
         self.heure = None
         self.temp = None
-        
-
-        
+        self.sonde = None        
         

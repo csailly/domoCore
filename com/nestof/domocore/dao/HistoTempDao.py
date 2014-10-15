@@ -30,11 +30,12 @@ class HistoTempDao(object):
             requete += '( '
             requete += HistoTemp.colDate + ','
             requete += HistoTemp.colTime + ','
-            requete += HistoTemp.colTemp 
+            requete += HistoTemp.colTemp + ','
+            requete += HistoTemp.colSonde
             requete += ' ) '
-            requete += ' VALUES(?,?,?)'
+            requete += ' VALUES(?,?,?,?)'
             
-            cursor.execute(requete, (histoTemp.date, histoTemp.heure, histoTemp.temp))
+            cursor.execute(requete, (histoTemp.date, histoTemp.heure, histoTemp.temp, histoTemp.sonde))
             
             db.commit()            
         except Exception as e:

@@ -103,11 +103,12 @@ class DatabaseService(object):
         else :
             self._parametrageDao.saveValue('ORDRE_MANU', 'OFF')
     
-    def saveTemp(self, date, time, temp):
+    def saveTemp(self, date, time, temp, idSonde):
         histoTemp = HistoTemp()
         histoTemp.date = date
         histoTemp.heure = time
         histoTemp.temp = temp
+        histoTemp.sonde = idSonde
         
         self._histoTempDao.save(histoTemp)
         
