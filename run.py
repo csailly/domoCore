@@ -25,8 +25,8 @@ if __name__ == '__main__':
     
     if sys.platform.startswith('linux') :
         configFilename = 'domocore.cfg'
-        from com.nestof.domocore.service.TempService import TempService
-        tempService = TempService()
+        from com.nestof.domocore.service.TempService import Tmp102
+        tempService = Tmp102()
         from ConfigParser import ConfigParser
     elif sys.platform.startswith('win') :
         configFilename = 'domocoreDev.cfg'
