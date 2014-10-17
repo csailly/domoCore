@@ -18,6 +18,9 @@ from com.nestof.domocore.service.DatabaseService import DatabaseService
 
 if __name__ == '__main__':
 
+    print("****************************************************************************")
+    print("**                       " + str(utils.getCurrentDateTime()) + "                       **")
+    print("****************************************************************************")
     
     if sys.platform.startswith('linux') :
         configFilename = 'domocore.cfg'

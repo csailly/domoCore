@@ -21,7 +21,10 @@ from com.nestof.domocore.service.MCZService import MCZService
 
 
 if __name__ == '__main__':
-
+    
+    print("****************************************************************************")
+    print("**                       " + str(utils.getCurrentDateTime()) + "                       **")
+    print("****************************************************************************")
     
     if sys.platform.startswith('linux') :
         configFilename = 'domocore.cfg'
@@ -37,8 +40,7 @@ if __name__ == '__main__':
         print("Unknown Operating System : " + sys.platform)
         exit(1)
     
-    """ Loading config file """
-    print("Loading config file...")    
+    """ Loading config file """  
     _configFile = normcase(normpath(os.path.dirname(os.path.abspath(__file__)))) + os.sep + normcase(normpath("conf")) + os.sep + configFilename
     
     if os.path.isfile(_configFile):    
@@ -56,22 +58,19 @@ if __name__ == '__main__':
     config.read(_configFile)
     
     """Logger configuration """
-    print("Configuring logger...")
     loggingFilePath = normcase(normpath(config.get('LOGGER', 'logger.path'))) + os.sep
     loggingFileName = config.get('LOGGER', 'logger.filename')
-    timedRotatingFileHandler = TimedRotatingFileHandler(loggingFilePath + loggingFileName, 'midnight', interval=1, backupCount=0, encoding='UTF-8', delay=True)       
-    logging.basicConfig(filename=loggingFilePath + loggingFileName, format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
+    logging.basicConfig(filename=loggingFilePath + loggingFileName, format='[%(asctime)s][%(levelname)s][%(name)s-%(funcName)s-%(lineno)s] - %(message)s', level=logging.INFO)
+    #timedRotatingFileHandler = TimedRotatingFileHandler(loggingFilePath + loggingFileName, 'midnight', interval=1, backupCount=0, encoding='UTF-8', delay=True)       
     #logging.basicConfig(handlers=[timedRotatingFileHandler], format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
     # logging.config.fileConfig(normcase(normpath("conf")) + os.sep + "logging.conf")
     logger = logging.getLogger(__name__)
 
 
-    logger.debug("****************************************************************************")
-    logger.debug("**                       " + str(utils.getCurrentDateTime()) + "                       **")
-    logger.debug("****************************************************************************")
+    logger.info("******************************************************")
+    logger.info("**             Démarrage                            **")
     
     """ Database configuration """
-    print("Loading database...")
     databasePath = normcase(normpath(config.get('DATABASE', 'database.path'))) + os.sep
     databaseFilename = config.get('DATABASE', 'database.filename')
 
@@ -91,14 +90,16 @@ if __name__ == '__main__':
     configurationPoele = databaseService.getConfig()
 
     if (configurationPoele == enumeration.ConfigurationPeole().automatique) :
-        print("Launch Automatique Mode...")
+        logger.debug("Launch Automatique Mode...")
         mczService.launchAuto()
     elif (configurationPoele == enumeration.ConfigurationPeole().manuel) :
-        print("Launch Manual Mode...")
+        logger.debug("Launch Manual Mode...")
         mczService.launchManu()
     else:
-        print("Launch Stop Mode...")
+        logger.debug("Launch Stop Mode...")
         mczService.launchStop()
-        
+    
+    logger.info("**              Terminé                             **")   
+    logger.info("******************************************************")
     exit(0)   
 
