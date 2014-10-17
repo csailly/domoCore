@@ -5,6 +5,7 @@ Created on 11 avr. 2014
 @author: S0087931
 '''
 import sqlite3
+import logging
 
 from com.nestof.domocore import enumeration, utils
 from com.nestof.domocore.domain.HistoTrameMCZ import HistoTrameMCZ
@@ -20,6 +21,7 @@ class HistoTrameMczDao(object):
         '''
         Constructor
         '''
+        self._logger = logging.getLogger(__name__)
         self._database = database
         
     def getLast(self):
@@ -40,7 +42,7 @@ class HistoTrameMczDao(object):
             
             
             if result == None :
-                print('Aucune trame')
+                self._logger.debug('Aucune trame')
             else :
                 histoTrameMcz = HistoTrameMCZ()
                 histoTrameMcz._actionneur = enumeration.Actionneur().getEnum(int(result[5]))
@@ -81,7 +83,7 @@ class HistoTrameMczDao(object):
             
             
             if result == None :
-                print('Aucune trame')
+                self._logger.debug('Aucune trame')
             else :
                 histoTrameMcz = HistoTrameMCZ()
                 histoTrameMcz._actionneur = enumeration.Actionneur().getEnum(int(result[5]))
@@ -150,7 +152,7 @@ class HistoTrameMczDao(object):
             
             
             if result == None :
-                print('Aucune trame')
+                self._logger.debug('Aucune trame')
             else :
                 histoTrameMcz = HistoTrameMCZ()
                 histoTrameMcz._actionneur = enumeration.Actionneur().getEnum(int(result[5]))

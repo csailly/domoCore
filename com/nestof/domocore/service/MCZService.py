@@ -305,65 +305,69 @@ class MCZService(object):
         self.constructAndSendTrame(False, True, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation)
 
         
-    def constructAndSendTrame(self, startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation):
+    def constructAndSendTrame(self, startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation, check=True):
         self._logger.debug("  ** Construction de la trame **")
         self._logger.debug("  Etat            : " + trameEtat.name)
         self._logger.debug("  Mode            : " + trameMode.name)
         self._logger.debug("  Actionneur      : " + trameActionneur.name)
         self._logger.debug("  Puissance       : " + niveauPuissance.name)
-        self._logger.debug("  Ventilation     : " + niveauVentilation.name)
-            
-        trame = self._mczProtocolService.getTrame(trameMode, trameEtat, trameActionneur, niveauPuissance, niveauVentilation)
-            
-        lastTrameIsSame = self._mczProtocolService.isTrameSameAsLastTrame(trame)
-        lastTrameElapsesTime = self._mczProtocolService.getLastTrameElapsedTime()
-            
-        self._logger.debug("  Dernière trame identique : " + str(lastTrameIsSame))
-        self._logger.debug("  Durée depuis dernier envoi : " + str(lastTrameElapsesTime) + " minutes")
+        self._logger.debug("  Ventilation     : " + niveauVentilation.name)        
+        
+        
+        if(check):           
+            """ Durée écoulée depuis dernière extinction """
+            lastPowerOffElapsedTime = self._mczProtocolService.getLastPowerOffElapsedTime()
     
-        lastPowerOffElapsedTime = self._mczProtocolService.getLastPowerOffElapsedTime()
-        
-        emitterSameStartTrameDelay = self._databaseService.getEmitterSameStartTrameDelay()
-        emitterSameStopTrameDelay = self._databaseService.getEmitterSameStopTrameDelay()
-        emitterStopTrameSendDuration = self._databaseService.getEmitterStopTrameSendDuration()
-        emitterOffMinDuration = self._databaseService.getEmitterOffMinDuration()
-        
-        if (shutdownStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime > float(emitterStopTrameSendDuration)):            
-            self._logger.debug("  Durée depuis dernière extinction : " + str(lastPowerOffElapsedTime))
-            self._logger.debug("  Durée des envois d'ordre d'extinction : " + str(emitterStopTrameSendDuration))
-            self._logger.debug("  On n'envoie pas")
-            return
-        
-        if (startStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime < float(emitterOffMinDuration)): 
-            self._logger.debug("  Durée depuis dernière extinction : " + str(lastPowerOffElapsedTime))
-            self._logger.debug("  Délai d'allumage après extinction : " + str(emitterOffMinDuration))
-            self._logger.debug("  On n'envoie pas")
-            return
+            """ Contrôle sur la durée maxi des envois d'ordre d'extinction """
+            emitterStopTrameSendDuration = self._databaseService.getEmitterStopTrameSendDuration()
             
-        if (not lastTrameIsSame or (lastTrameIsSame and ((startStove and lastTrameElapsesTime >= float(emitterSameStartTrameDelay)) \
-                                                          or (shutdownStove and lastTrameElapsesTime >= float(emitterSameStopTrameDelay))))) :
-            """ Trame précédente différente
-                OU Trame précédente identique ET
-                    Allumage et délai envoi entre 2 trames d'allumage identiques écoulé 
-                    OU Extinction et délai envoi entre 2 trames d'extinction identiques écoulé """
-            self._logger.debug("  On envoie")                
-            try:
-                """Envoi de la trame"""
-                os.system(self._config.get('EMITTER', 'emitter.command') + " " + trame._message)
+            if (shutdownStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime > float(emitterStopTrameSendDuration)):            
+                self._logger.debug("  Durée depuis dernière extinction : " + str(lastPowerOffElapsedTime) + " minutes")
+                self._logger.debug("  Durée des envois d'ordre d'extinction : " + str(emitterStopTrameSendDuration) + " minutes")
+                self._logger.debug("  On n'envoie pas")
+                return
+            
+            """ Contrôle sur le délai minimal entre 2 cycles extinction/allumage """
+            emitterOffMinDuration = self._databaseService.getEmitterOffMinDuration()       
+            if (startStove and lastPowerOffElapsedTime != None and lastPowerOffElapsedTime < float(emitterOffMinDuration)): 
+                self._logger.debug("  Durée depuis dernière extinction : " + str(lastPowerOffElapsedTime) + " minutes")
+                self._logger.debug("  Délai d'allumage après extinction : " + str(emitterOffMinDuration) + " minutes")
+                self._logger.debug("  On n'envoie pas")
+                return
+           
+            """ Contrôle sur l'envoi de trame identiques """     
+            lastTrameIsSame = self._mczProtocolService.isTrameSameAsLastTrame(trameMode, trameEtat, niveauPuissance, niveauVentilation)
+            lastTrameElapsesTime = self._mczProtocolService.getLastTrameElapsedTime()
+            emitterSameStartTrameDelay = self._databaseService.getEmitterSameStartTrameDelay()
+            emitterSameStopTrameDelay = self._databaseService.getEmitterSameStopTrameDelay()
+            
+            if(lastTrameIsSame and ((startStove and lastTrameElapsesTime < float(emitterSameStartTrameDelay)) \
+                                     or (shutdownStove and lastTrameElapsesTime < float(emitterSameStopTrameDelay)))):
+                self._logger.debug("  Dernière trame identique ")
+                self._logger.debug("  Durée depuis dernier envoi : " + str(lastTrameElapsesTime) + " minutes")
+                if (startStove):
+                    self._logger.debug("  Délai entre 2 trames On    : " + str(emitterSameStartTrameDelay) + " minutes")
+                if (shutdownStove):
+                    self._logger.debug("  Délai entre 2 trames Off   : " + str(emitterSameStopTrameDelay) + " minutes")
+                self._logger.debug("  On n'envoie pas")
+                return
+       
+        self._logger.debug("  On envoie")                
+        try:
+            """Construction de la trame """
+            trame = self._mczProtocolService.getTrame(trameMode, trameEtat, trameActionneur, niveauPuissance, niveauVentilation)
+
+            """Envoi de la trame"""
+            os.system(self._config.get('EMITTER', 'emitter.command') + " " + trame._message)
                 
-                # proc = subprocess.Popen([self._config['EMITTER']['emitter.command'], trame._message], stdout=subprocess.PIPE, shell=True)
-                # (out, err) = proc.communicate()
-                # print("program output:" + str(err))
-                
-                
-                if startStove : 
-                    self._databaseService.setStoveActive(True)
-                else :
-                    self._databaseService.setStoveActive(False)
-                self._mczProtocolService.saveTrame(trame)        
-            except Exception as e:
-                raise
-            finally:
-                self._logger.debug("  Trame envoyée")
-        else :
-            self._logger.debug("  Même trame, délai insuffisant :" + str(lastTrameElapsesTime))      
+            """ Sauvegarde de l'état du poêle """    
+            self._databaseService.setStoveActive(startStove)
+            
+            """ Sauvegarde de la trame """
+            self._mczProtocolService.saveTrame(trame)        
+        except Exception as e:
+            self._logger.error("  Trame non envoyée", e)
+            raise
+        finally:
+            self._logger.debug("  Trame envoyée")
+     

@@ -44,7 +44,7 @@ class MCZProtocolService(object):
         message += self.__getData4(puissance, ventilation, trame._order)  
         message += self.__getData5(actionneur, trame._flag)  
         message += self.__getData6(puissance, ventilation, trame._order)  
-        message += self.__getData7(actionneur,mode, trame._flag)
+        message += self.__getData7(actionneur, mode, trame._flag)
         
         trame._message = message
         
@@ -125,7 +125,7 @@ class MCZProtocolService(object):
                    
         return data5
     
-    def __getData6(self,puissance, ventilation,ordre):
+    def __getData6(self, puissance, ventilation, ordre):
         """
         Construct the data #6
         - bit 1 => 1
@@ -147,14 +147,14 @@ class MCZProtocolService(object):
         binOrdre = ordre.getBinValue() 
         
         data6 = '1'
-        data6 += str((int(binVentilation[0])^int(binVentilation[1]))^int(binPuissance[2]))
-        data6 += str(1^((int(binVentilation[1])^int(binVentilation[2]))^int(binOrdre[0]))) 
-        data6 += str(1^((int(ventilation.value%2 == 0)^int(binPuissance[0]))^int(binOrdre[1])))
-        data6 += str(1^int(binPuissance[0]))
-        data6 += str(int(binVentilation[0])^int(binPuissance[1]))
-        data6 += str(int(binVentilation[1])^int(binPuissance[2]))
-        data6 += str(int(ventilation.value%2 == 0)^int(binOrdre[0]))
-        data6 += str(1^(int(binPuissance[0])^int(binOrdre[1])))
+        data6 += str((int(binVentilation[0]) ^ int(binVentilation[1])) ^ int(binPuissance[2]))
+        data6 += str(1 ^ ((int(binVentilation[1]) ^ int(binVentilation[2])) ^ int(binOrdre[0]))) 
+        data6 += str(1 ^ ((int(ventilation.value % 2 == 0) ^ int(binPuissance[0])) ^ int(binOrdre[1])))
+        data6 += str(1 ^ int(binPuissance[0]))
+        data6 += str(int(binVentilation[0]) ^ int(binPuissance[1]))
+        data6 += str(int(binVentilation[1]) ^ int(binPuissance[2]))
+        data6 += str(int(ventilation.value % 2 == 0) ^ int(binOrdre[0]))
+        data6 += str(1 ^ (int(binPuissance[0]) ^ int(binOrdre[1])))
         data6 += '0'
         data6 += self.__getParityBit(data6)        
         data6 += '1'
@@ -184,7 +184,7 @@ class MCZProtocolService(object):
         else:
             data7 += '0'
         data7 += '1'
-        data7 += str(1^flag)
+        data7 += str(1 ^ flag)
         data7 += str(flag)
         if (actionneur == enumeration.Actionneur.systeme):
             data7 += '0'
@@ -202,7 +202,7 @@ class MCZProtocolService(object):
 
     
     def __getParityBit(self, value):
-        return str(str(value.count('1') %2).count('0'))
+        return str(str(value.count('1') % 2).count('0'))
     
     def __getFlag(self, ordre, puissance, ventilation, actionneur):
         """ Return the flag to use to construct the new trame message """
@@ -214,7 +214,7 @@ class MCZProtocolService(object):
             return 1
     
         if lastTrameMCZ._actionneur == actionneur and lastTrameMCZ._order == ordre and  lastTrameMCZ._puissance == puissance and  lastTrameMCZ._ventilation == ventilation :
-            return 1^int(lastTrameMCZActionneur._flag)
+            return 1 ^ int(lastTrameMCZActionneur._flag)
         
         return int(lastTrameMCZActionneur._flag)
     
@@ -241,19 +241,19 @@ class MCZProtocolService(object):
         lastTime = lastTrame._sendDate
         currentTime = utils.getCurrentDateTime()            
         delta = currentTime - datetime.strptime(lastTime, "%Y-%m-%d %H:%M:%S.%f")
-        return (delta.days*24*60*60 + delta.seconds) / 60
+        return (delta.days * 24 * 60 * 60 + delta.seconds) / 60
     
-    def isTrameSameAsLastTrame(self, trame):
+    def isTrameSameAsLastTrame(self, mode, etat, puissance, ventilation):
         """ Test if the current trame and the last trame are same"""
         lastTrame = self.getLastTrame()
                 
         if lastTrame == None :
             return False                
-        if lastTrame._order != trame._order :
+        if lastTrame._order != enumeration.getOrdre(mode, etat) :
             return False
-        if lastTrame._puissance != trame._puissance :
+        if lastTrame._puissance != puissance :
             return False
-        if lastTrame._ventilation != trame._ventilation :
+        if lastTrame._ventilation != ventilation :
             return False
         return True
         
@@ -265,7 +265,7 @@ class MCZProtocolService(object):
         lastTime = lastPowerOff._sendDate
         currentTime = utils.getCurrentDateTime()            
         delta = currentTime - datetime.strptime(lastTime, "%Y-%m-%d %H:%M:%S.%f")
-        return (delta.days*24*60*60 + delta.seconds) / 60    
+        return (delta.days * 24 * 60 * 60 + delta.seconds) / 60    
         
     
     

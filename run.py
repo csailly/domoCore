@@ -60,8 +60,8 @@ if __name__ == '__main__':
     loggingFilePath = normcase(normpath(config.get('LOGGER', 'logger.path'))) + os.sep
     loggingFileName = config.get('LOGGER', 'logger.filename')
     timedRotatingFileHandler = TimedRotatingFileHandler(loggingFilePath + loggingFileName, 'midnight', interval=1, backupCount=0, encoding='UTF-8', delay=True)       
-    logging.basicConfig(filename=loggingFilePath + loggingFileName, format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
-    #logging.basicConfig(handlers=[timedRotatingFileHandler], format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
+    logging.basicConfig(filename=loggingFilePath + loggingFileName, format='[%(asctime)s][%(levelname)s][%(name)s-%(funcName)s-%(lineno)s] - %(message)s', level=logging.DEBUG)
+    # logging.basicConfig(handlers=[timedRotatingFileHandler], format='[%(asctime)s][%(levelname)s][%(name)s] - %(message)s', level=logging.DEBUG)
     # logging.config.fileConfig(normcase(normpath("conf")) + os.sep + "logging.conf")
     logger = logging.getLogger(__name__)
 
