@@ -9,6 +9,6 @@ git reset --hard origin/master
 git clean -dfx
 
 find . -exec chown nobody {} \;
-find . -exec chgrp nogroup {} \;
+#find . -exec chgrp nogroup {} \;
 
 exit 0

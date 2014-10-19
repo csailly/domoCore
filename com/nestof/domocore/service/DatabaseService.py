@@ -58,6 +58,9 @@ class DatabaseService(object):
         mode._max = float(self._parametrageDao.getValue('TEMP_MAXI_MARCHE_FORCEE'))
         return mode
     
+    def isCheckDelays(self):
+        return self._parametrageDao.getValue('EMITTER_CHECK_DELAYS') == 'TRUE'
+    
     def isStoveActive(self):
         return self._parametrageDao.getValue('POELE_ETAT') == 'ON'
     

@@ -8,7 +8,7 @@ Created on 22 mai 2014
 from datetime import datetime
 import logging
 from os.path import os
-import subprocess
+
 
 from com.nestof.domocore import  enumeration, utils
 
@@ -76,6 +76,25 @@ class MCZService(object):
         self._logger.debug("  Arrêt forcé     : " + str(offForced))
         self._logger.debug("  Température     : " + str(currentTemp) + "°C")
         """ ------- DEBUG ------ """
+     
+        """ Initialisation des paramètres de la trame """
+        """ Niveau de chauffe """    
+        niveauPuissance = enumeration.NiveauPuissance.niveau1
+        """ Niveau de ventilation """
+        niveauVentilation = enumeration.NiveauVentilation.auto
+        """ Mode de fonctionnement """
+        trameMode = enumeration.Mode.automatique
+        """ Etat """
+        trameEtat = enumeration.Etat.off
+        """ Actionneur """
+        trameActionneur = enumeration.Actionneur.systeme        
+     
+        """ Detection de l'actionneur """
+        if onForced and not offForced and not stoveIsOn :
+            trameActionneur = enumeration.Actionneur.utilisateur
+        if offForced and not onForced and stoveIsOn:
+            trameActionneur = enumeration.Actionneur.utilisateur
+     
         
         """RAZ des indicateurs de forçage"""
         if (onForced and offForced) :
@@ -101,25 +120,13 @@ class MCZService(object):
                 """ Le poêle est allumé => RAZ indicateur marche forcée """
                 self._databaseService.setForcedOn(False)
                 onForced = False
-            elif tempZone1 or tempZone3 :
+            elif tempZone1 or tempZone3 :            
                 """ Le poêle est éteint et on est dans les zones de température 1 ou 3 => RAZ indicateur marche forcée """
                 self._databaseService.setForcedOn(False)
                 onForced = False
         
-        """Mise à jour dernier mode"""
-        self._databaseService.setLastModeId(currentMode._id)
-        
-        """ Initialisation des paramètres de la trame """
-        """ Niveau de chauffe """    
-        niveauPuissance = enumeration.NiveauPuissance.niveau1
-        """ Niveau de ventilation """
-        niveauVentilation = enumeration.NiveauVentilation.auto
-        """ Mode de fonctionnement """
-        trameMode = enumeration.Mode.automatique
-        """ Etat  """
-        trameEtat = enumeration.Etat.off
-        """ Actionneur """
-        trameActionneur = enumeration.Actionneur.systeme
+        """ Mise à jour dernier mode """
+        self._databaseService.setLastModeId(currentMode._id)   
                       
         """ Allumage / Arrêt du poêle """
         """ Allumage du poêle ou maintient allumé """ 
@@ -186,16 +193,16 @@ class MCZService(object):
         """ Mise à jour des paramètres de la trame """
         if startStove:
             trameEtat = enumeration.Etat.on
-            if onForced and not stoveIsOn :
-                trameActionneur = enumeration.Actionneur.utilisateur    
+#             if onForced and not stoveIsOn :
+#                 trameActionneur = enumeration.Actionneur.utilisateur    
         elif shutdownStove :
             trameEtat = enumeration.Etat.off
             lastTrame = self._mczProtocolService.getLastTrame()
             if lastTrame != None :
                 niveauPuissance = lastTrame._puissance
                 niveauVentilation = lastTrame._ventilation
-            if offForced and stoveIsOn:
-                trameActionneur = enumeration.Actionneur.utilisateur
+#             if offForced and stoveIsOn:
+#                 trameActionneur = enumeration.Actionneur.utilisateur
 
     
         self._logger.debug("  Allumage        : " + str(startStove))
@@ -203,7 +210,12 @@ class MCZService(object):
 
         """ On construit la trame et on l'envoi """       
         if startStove or shutdownStove :
-            self.constructAndSendTrame(startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation)
+            if (trameActionneur != enumeration.Actionneur.utilisateur or \
+                trameActionneur == enumeration.Actionneur.utilisateur and self._databaseService.isCheckDelays()):
+                check = True
+            else:
+                check = False           
+            self.constructAndSendTrame(startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation, check)
         
     def launchManu(self):
         self._logger.debug("---------- Launching Manu Mode ----------")
@@ -276,7 +288,12 @@ class MCZService(object):
         
         """ On construit la trame et on l'envoi """              
         if startStove or shutdownStove :
-            self.constructAndSendTrame(startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation)
+            if (trameActionneur != enumeration.Actionneur.utilisateur or \
+                trameActionneur == enumeration.Actionneur.utilisateur and self._databaseService.isCheckDelays()):
+                check = True
+            else:
+                check = False
+            self.constructAndSendTrame(startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation, check)
                     
         self._databaseService.saveOrdreManu(self._databaseService.isStoveActive())
 
@@ -302,19 +319,19 @@ class MCZService(object):
             niveauVentilation = lastTrame._ventilation
         
         """ On construit la trame et on l'envoi """        
-        self.constructAndSendTrame(False, True, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation)
+        self.constructAndSendTrame(False, True, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation, True)
 
         
-    def constructAndSendTrame(self, startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation, check=True):
+    def constructAndSendTrame(self, startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation, check):
         self._logger.debug("  ** Construction de la trame **")
         self._logger.debug("  Etat            : " + trameEtat.name)
         self._logger.debug("  Mode            : " + trameMode.name)
         self._logger.debug("  Actionneur      : " + trameActionneur.name)
         self._logger.debug("  Puissance       : " + niveauPuissance.name)
         self._logger.debug("  Ventilation     : " + niveauVentilation.name)        
+        self._logger.debug("  Contrôles       : " + str(check))        
         
-        
-        if(check):           
+        if (check) :        
             """ Durée écoulée depuis dernière extinction """
             lastPowerOffElapsedTime = self._mczProtocolService.getLastPowerOffElapsedTime()
     
