@@ -84,11 +84,15 @@ if __name__ == '__main__':
     time = utils.getCurrentTime();
     date = utils.getCurrentDate();
     tempSonde1 = tempServiceTmp102.readTemp()
-    tempSonde2 = tempServiceDs18b20.readTemp()
+    try:
+        tempSonde2 = tempServiceDs18b20.readTemp()
+    except Exception as e:
+        tempSonde2 = None
     
     
     """Save current temp"""
     databaseService.saveTemp(date, time, tempSonde1, 1)
-    databaseService.saveTemp(date, time, tempSonde2, 2)
+    if tempSonde2 != None:
+        databaseService.saveTemp(date, time, tempSonde2, 2)
     
     logger.debug("Sonde 1 : "+str(tempSonde1)+" - Sonde 2 : "+str(tempSonde2))
