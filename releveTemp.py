@@ -27,7 +27,10 @@ if __name__ == '__main__':
         from com.nestof.domocore.service.TempService import Tmp102
         from com.nestof.domocore.service.TempService import DS18B20
         tempServiceTmp102 = Tmp102()
-        tempServiceDs18b20 = DS18B20()
+        try:
+            tempServiceDs18b20 = DS18B20()
+        except Exception as e:
+            tempServiceDs18b20 = None
         from ConfigParser import ConfigParser
     elif sys.platform.startswith('win') :
         configFilename = 'domocoreDev.cfg'
