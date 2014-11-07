@@ -224,14 +224,20 @@ class MCZProtocolService(object):
         if currentTemp >= consigne :
             return enumeration.NiveauPuissance.niveau1
         else :
-            if currentTemp >= consigne - 1 :
-                return enumeration.NiveauPuissance.niveau2
-            elif currentTemp >= consigne - 2 :
-                return enumeration.NiveauPuissance.niveau3
-            elif currentTemp >= consigne - 3 :
-                return enumeration.NiveauPuissance.niveau4
-            else :
+            """ Durée écoulée depuis dernièr allumage """
+            lastPowerOnElapsedTime = self.getLastPowerOnElapsedTime()
+            
+            if (lastPowerOnElapsedTime == None or lastPowerOnElapsedTime <= float(30)):
                 return enumeration.NiveauPuissance.niveau5
+            else:
+                if currentTemp >= consigne - 1 :
+                    return enumeration.NiveauPuissance.niveau2
+                elif currentTemp >= consigne - 2 :
+                    return enumeration.NiveauPuissance.niveau3
+                elif currentTemp >= consigne - 3 :
+                    return enumeration.NiveauPuissance.niveau4
+                else :
+                    return enumeration.NiveauPuissance.niveau5
             
     def getLastTrameElapsedTime(self):
         """ Return the elapsed time since the last trame in minute"""
@@ -267,6 +273,14 @@ class MCZProtocolService(object):
         delta = currentTime - datetime.strptime(lastTime, "%Y-%m-%d %H:%M:%S.%f")
         return (delta.days * 24 * 60 * 60 + delta.seconds) / 60    
         
-    
+    def getLastPowerOnElapsedTime(self):
+        """ Return  the elapsed time since the last power off in minute"""
+        lastPowerOff = self.__histoTrameMczDao.getLastPowerOn()
+        if lastPowerOff == None :
+            return None   
+        lastTime = lastPowerOff._sendDate
+        currentTime = utils.getCurrentDateTime()            
+        delta = currentTime - datetime.strptime(lastTime, "%Y-%m-%d %H:%M:%S.%f")
+        return (delta.days * 24 * 60 * 60 + delta.seconds) / 60    
     
     
