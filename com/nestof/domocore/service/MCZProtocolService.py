@@ -12,6 +12,7 @@ from com.nestof.domocore import  enumeration, utils
 from com.nestof.domocore.dao.HistoTrameMczDao import HistoTrameMczDao
 from com.nestof.domocore.domain.HistoTrameMCZ import HistoTrameMCZ
 from com.nestof.domocore.dto.TrameMcz import TrameMcz
+from com.nestof.domocore.service.DatabaseService import DatabaseService
 
 
 class MCZProtocolService(object):
@@ -29,6 +30,7 @@ class MCZProtocolService(object):
         Constructor
         '''
         self.__database = database
+        self.__databaseService = DatabaseService(database)
         self.__histoTrameMczDao = HistoTrameMczDao(database)
         
     def getTrame(self, mode, etat, actionneur, puissance, ventilation):
@@ -64,8 +66,7 @@ class MCZProtocolService(object):
         histoTrameMcz._flag = trame._flag
         histoTrameMcz._message = trame._message
     
-        histoTrameMczDao = HistoTrameMczDao(self.__database)
-        histoTrameMczDao.save(histoTrameMcz)
+        self.__histoTrameMczDao.save(histoTrameMcz)
     
     def __getRemoteCode(self):
         return bin(self.__remoteCode1)[2:].zfill(12) + bin(self.__remoteCode2)[2:].zfill(12) + bin(self.__remoteCode3)[2:].zfill(12)
@@ -227,7 +228,9 @@ class MCZProtocolService(object):
             """ Durée écoulée depuis dernièr allumage """
             lastPowerOnElapsedTime = self.getLastPowerOnElapsedTime()
             
-            if (lastPowerOnElapsedTime == None or lastPowerOnElapsedTime <= float(30)):
+            boostDuration = self.__databaseService.getEmitterBoostDuration()
+            
+            if (lastPowerOnElapsedTime == None or lastPowerOnElapsedTime <= float(boostDuration)):
                 return enumeration.NiveauPuissance.niveau5
             else:
                 if currentTemp >= consigne - 1 :

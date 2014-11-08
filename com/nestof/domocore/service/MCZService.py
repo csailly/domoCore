@@ -141,14 +141,15 @@ class MCZService(object):
             minutesToEndPeriode = datetime.strptime(currentPeriode._endHour, "%H:%M") - datetime.strptime(utils.getCurrentTime(), "%H:%M:%S")
             minutesToEndPeriode = (minutesToEndPeriode.seconds) / 60
         
+        startLimitBeforeEndPeriod = float(self._databaseService.getEmitterStartLimitBeforeEndPeriod())
                 
         if currentModeDefined:
             """ Un mode est défini """
-            if (not stoveIsOn and minutesToEndPeriode != None and minutesToEndPeriode < 30):
+            if (not stoveIsOn and minutesToEndPeriode != None and minutesToEndPeriode < startLimitBeforeEndPeriod):
                 """ Le poêle est arrété et la période se termine dans moins de 30 minutes """
                 """ => On n'allume pas le poêle """
                 None
-            elif (stoveIsOn and tempZone2 and minutesToEndPeriode != None and minutesToEndPeriode < 30):
+            elif (stoveIsOn and tempZone2 and minutesToEndPeriode != None and minutesToEndPeriode < startLimitBeforeEndPeriod):
                 """ Le poêle est en marche et la période se termine dans moins de 30 minutes et en zone de température 2 """
                 """ => On ne maintient pas l'allumage """
                 None       
@@ -177,7 +178,7 @@ class MCZService(object):
                         (not currentModeDefined and onForced and not offForced and tempForcedZone3) or \
                         (currentModeDefined and not onForced and not offForced and tempZone3) or \
                         (currentModeDefined and not onForced and offForced) or \
-                        (currentModeDefined and tempZone2 and minutesToEndPeriode != None and minutesToEndPeriode < 30) :
+                        (currentModeDefined and tempZone2 and minutesToEndPeriode != None and minutesToEndPeriode < startLimitBeforeEndPeriod) :
                     """ Pas de mode défini et pas d'indicateur de forçage """
                     """ OU Pas de mode défini et indicateur de marche forcée et zone de température 3 """
                     """ OU Mode défini et pas d'indicateur de forçage et zone de température 3 """

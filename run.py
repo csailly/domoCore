@@ -67,8 +67,6 @@ if __name__ == '__main__':
     # logging.config.fileConfig(normcase(normpath("conf")) + os.sep + "logging.conf")
     logger = logging.getLogger(__name__)
 
-
-    logger.info("******************************************************")
     logger.info("**             Démarrage                            **")
     
     """ Database configuration """
@@ -101,6 +99,5 @@ if __name__ == '__main__':
         mczService.launchStop()
     
     logger.info("**              Terminé                             **")   
-    logger.info("******************************************************")
     exit(0)   
 

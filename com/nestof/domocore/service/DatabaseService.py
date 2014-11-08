@@ -127,3 +127,9 @@ class DatabaseService(object):
     def getEmitterOffMinDuration(self):
         return self._parametrageDao.getValue('EMITTER_OFF_MIN_DURATION')
         
+    def getEmitterBoostDuration(self):
+        return self._parametrageDao.getValue('EMITTER_BOOST_DURATION')
+    
+    def getEmitterStartLimitBeforeEndPeriod(self):
+        return self._parametrageDao.getValue('EMITTER_START_LIMIT_BEFORE_END_PERIOD')
+

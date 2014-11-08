@@ -1,1 +1,1 @@
-insert into parametrage(code, type, valeur, commentaire, valeurs) values('EMITTER_CHECK_DELAYS','BOOLEAN','TRUE','Activation des contrôles de délai','TRUE;FALSE');
+insert into parametrage(code, type, valeur, commentaire) values('EMITTER_START_LIMIT_BEFORE_END_PERIOD','INTEGER','30','Limite de marche avant la fin de période, en minutes');
