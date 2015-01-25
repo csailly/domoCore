@@ -66,3 +66,52 @@ class PeriodDao(object):
             # Close the db connection
             db.close()
             return periode
+        
+            
+    def findAtDatetime(self, datetime):       
+        periode = None
+        
+        try :
+            db = sqlite3.connect(self._database)
+            cursor = db.cursor()
+            
+            requete = '''select * from ('''
+            requete += ''' SELECT * FROM ''' + Period.tableName + ''' p where '''
+            ''' On récupère la période à la date courante '''
+            requete += ''' ((p.''' + Period.colStartDateName + ''' <= ? and p.''' + Period.colEndDateName + ''' >= ?)     and p.''' + Period.colStartHourName + ''' <= time(?) and p.''' + Period.colEndHourName + ''' > time(?)) '''
+            requete += ''' or '''
+            ''' Ou la période du jour calendaire '''
+            requete += ''' (p.jour = strftime('%w', ?) and p.''' + Period.colStartHourName + ''' <= time(?) and p.''' + Period.colEndHourName + ''' > time(?)) '''
+            ''' On trie pour obtenir en priorité la période à la date courante '''
+            requete += ''' order by  p.''' + Period.colStartDateName + ''' desc, p.''' + Period.colEndDateName + ''' asc '''
+            ''' On ne retient alors que le 1er résultat '''
+            requete += ''' ) limit 1 ''' 
+            
+            param = (datetime, datetime, datetime, datetime, datetime, datetime, datetime,)
+            
+            cursor.execute(requete, param,)
+    
+            result = cursor.fetchone()            
+            
+            if result == None :
+                print('Aucune période de définie')
+            else :
+                periode = Period()
+                periode._id = result[0]
+                periode._day = result[1]
+                periode._startDate = result[2]
+                periode._endDate = result[3]
+                periode._startHour = result[4]
+                periode._endHour = result[5]
+                periode._modeId = result[6]
+            
+        except Exception as e:
+            # Roll back any change if something goes wrong
+            db.rollback()
+            raise e
+        finally:
+            # Close the db connection
+            db.close()
+            return periode
+        
+    

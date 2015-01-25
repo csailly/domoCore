@@ -26,7 +26,10 @@ if __name__ == '__main__':
         configFilename = 'domocore.cfg'
         from com.nestof.domocore.service.TempService import Tmp102
         from com.nestof.domocore.service.TempService import DS18B20
-        tempServiceTmp102 = Tmp102()
+        try:
+            tempServiceTmp102 = Tmp102()
+        except Exception as e:
+            tempServiceTmp102 = None
         try:
             tempServiceDs18b20 = DS18B20()
         except Exception as e:
@@ -86,7 +89,10 @@ if __name__ == '__main__':
     """Read current temp"""
     time = utils.getCurrentTime();
     date = utils.getCurrentDate();
-    tempSonde1 = tempServiceTmp102.readTemp()
+    try:
+	tempSonde1 = tempServiceTmp102.readTemp()
+    except Exception as e:
+	tempSonde1 = None
     try:
         tempSonde2 = tempServiceDs18b20.readTemp()
     except Exception as e:
@@ -94,7 +100,8 @@ if __name__ == '__main__':
     
     
     """Save current temp"""
-    databaseService.saveTemp(date, time, tempSonde1, 1)
+    if tempSonde1 != None:
+	databaseService.saveTemp(date, time, tempSonde1, 1)
     if tempSonde2 != None:
         databaseService.saveTemp(date, time, tempSonde2, 2)
     

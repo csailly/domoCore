@@ -10,6 +10,18 @@ import time
 import smbus
 
 
+class Degrade(object):
+    '''
+    classdocs
+    '''
+    def __init__(self):
+        '''
+        Constructor
+        '''
+        
+    def readTemp(self):     
+        return 19
+
 class Tmp102(object):
     '''
     classdocs

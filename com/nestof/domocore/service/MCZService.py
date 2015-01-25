@@ -10,7 +10,7 @@ import logging
 from os.path import os
 
 
-from com.nestof.domocore import  enumeration, utils
+from com.nestof.domocore import  enumeration
 
 
 class MCZService(object):
@@ -34,9 +34,10 @@ class MCZService(object):
     def launchAuto(self):
         self._logger.debug("---------- Launching Auto Mode ----------")        
         
-        """ Mode en cours """    
-        currentMode = self._databaseService.findCurrentMode()
-        currentModeDefined = currentMode != None
+        """ Mode en cours """
+        currentPeriode = self._databaseService.findCurrentPeriode()        
+        currentPeriodDefined = currentPeriode != None
+        nextPeriode = self._databaseService.findNextPeriode(currentPeriode)
     
         """ Id du dernier mode """
         lastModeId = self._databaseService.getLastModeId()   
@@ -55,9 +56,9 @@ class MCZService(object):
         currentTemp = self._tempService.readTemp();
         
         """ Zones de températures du mode en cours """
-        if currentModeDefined :        
-            tempZone1 = currentTemp < currentMode._cons
-            tempZone3 = currentTemp >= currentMode._max
+        if currentPeriodDefined :        
+            tempZone1 = currentTemp < currentPeriode._mode._cons
+            tempZone3 = currentTemp >= currentPeriode._mode._max
             tempZone2 = not tempZone1 and not tempZone3
         
         """ Zones de températures du mode forcé """
@@ -66,10 +67,10 @@ class MCZService(object):
         tempForcedZone2 = not tempForcedZone1 and not tempForcedZone3      
         
         """ ------- DEBUG ------ """
-        if currentModeDefined :
-            self._logger.debug("  Mode en cours   : " + currentMode._libelle)
-            self._logger.debug("  Consigne        : " + str(currentMode._cons) + "°C")
-            self._logger.debug("  Max             : " + str(currentMode._max) + "°C")
+        if currentPeriodDefined :
+            self._logger.debug("  Mode en cours   : " + currentPeriode._mode._libelle)
+            self._logger.debug("  Consigne        : " + str(currentPeriode._mode._cons) + "°C")
+            self._logger.debug("  Max             : " + str(currentPeriode._mode._max) + "°C")
         self._logger.debug("  Dernier mode    : " + str(lastModeId))
         self._logger.debug("  Poêle actif     : " + str(stoveIsOn))
         self._logger.debug("  Marche forcée   : " + str(onForced))
@@ -103,18 +104,17 @@ class MCZService(object):
             self._databaseService.setForcedOn(False)
             onForced = False
             offForced = False
-        elif lastModeId != None and currentMode != None and str(currentMode._id) != str(lastModeId) :
+        elif lastModeId != None and currentPeriodDefined and str(currentPeriode._mode._id) != str(lastModeId) :
             """ On change de mode => RAZ des indicateurs """
             self._databaseService.setForcedOff(False)
             self._databaseService.setForcedOn(False)
             onForced = False
             offForced = False
-        elif (offForced and not currentModeDefined):
+        elif (offForced and not currentPeriodDefined):
             """ On est en arrêt forcé et aucun mode n'est défini => RAZ indicateur arrêt forcé """
             self._databaseService.setForcedOff(False)
             offForced = False
-            None
-        elif (onForced and currentModeDefined):
+        elif (onForced and currentPeriodDefined):
             """ On est en marche forcée et un mode est défini """
             if stoveIsOn :
                 """ Le poêle est allumé => RAZ indicateur marche forcée """
@@ -126,7 +126,11 @@ class MCZService(object):
                 onForced = False
         
         """ Mise à jour dernier mode """
-        self._databaseService.setLastModeId(currentMode._id)   
+        if currentPeriodDefined:
+            self._databaseService.setLastModeId(currentPeriode._mode._id)
+        else:
+            None
+            """@TODO self._databaseService.setLastModeId(None)"""
                       
         """ Allumage / Arrêt du poêle """
         """ Allumage du poêle ou maintient allumé """ 
@@ -134,23 +138,30 @@ class MCZService(object):
         """ Arrêt du poêle ou maintient éteint """
         shutdownStove = False
         
-        
+        """ Calcul du nombre de minutes avant la fin de la période """
         minutesToEndPeriode = None
-        currentPeriode = self._databaseService.findCurrentPeriode()
-        if currentPeriode != None and currentPeriode._endHour != None:          
-            minutesToEndPeriode = datetime.strptime(currentPeriode._endHour, "%H:%M") - datetime.strptime(utils.getCurrentTime(), "%H:%M:%S")
+        if currentPeriodDefined and currentPeriode._endDatetime != None:
+            if nextPeriode != None  and currentPeriode._mode._id == nextPeriode._mode._id: 
+                minutesToEndPeriode = nextPeriode._endDatetime - datetime.now()
+            else:
+                minutesToEndPeriode = currentPeriode._endDatetime - datetime.now()
             minutesToEndPeriode = (minutesToEndPeriode.seconds) / 60
         
-        startLimitBeforeEndPeriod = float(self._databaseService.getEmitterStartLimitBeforeEndPeriod())
+        """ Limite de marche en fin de période atteinte """
+        endPeriodPowerOnLimit = minutesToEndPeriode != None and minutesToEndPeriode < float(self._databaseService.getEmitterStartLimitBeforeEndPeriod())
+        
+        """ Si la consigne de la péiode suivante est supérieure à la consigne de la periode courante """
+        if endPeriodPowerOnLimit == True and nextPeriode != None and nextPeriode._mode._cons >= currentPeriode._mode._cons:
+            endPeriodPowerOnLimit = False
                 
-        if currentModeDefined:
+        if currentPeriodDefined:
             """ Un mode est défini """
-            if (not stoveIsOn and minutesToEndPeriode != None and minutesToEndPeriode < startLimitBeforeEndPeriod):
-                """ Le poêle est arrété et la période se termine dans moins de 30 minutes """
+            if (not stoveIsOn and  endPeriodPowerOnLimit):
+                """ Le poêle est arrété et la période se termine dans moins de XX minutes """
                 """ => On n'allume pas le poêle """
                 None
-            elif (stoveIsOn and tempZone2 and minutesToEndPeriode != None and minutesToEndPeriode < startLimitBeforeEndPeriod):
-                """ Le poêle est en marche et la période se termine dans moins de 30 minutes et en zone de température 2 """
+            elif (stoveIsOn and tempZone2 and  endPeriodPowerOnLimit):
+                """ Le poêle est en marche et la période se termine dans moins de XX minutes et en zone de température 2 """
                 """ => On ne maintient pas l'allumage """
                 None       
             elif ((not onForced and not offForced and tempZone1) or \
@@ -160,7 +171,7 @@ class MCZService(object):
                 """ OU Pas d'indicateurs de forçade de définis et en zone de température 2 et poêle déjà en marche """
                 """ OU Indicateur de marche forcée défini et en zone de température 2 et poêle en arrêt """
                 """ => On allume ou on maintient allumé """
-                niveauPuissance = self._mczProtocolService.getNiveauPuissance(currentTemp, currentMode._cons);
+                niveauPuissance = self._mczProtocolService.getNiveauPuissance(currentTemp, currentPeriode._mode._cons);
                 startStove = True
         elif onForced and (tempForcedZone1 or tempForcedZone2) :
             """ Pas de mode de défini """
@@ -174,16 +185,16 @@ class MCZService(object):
             """ On ne demande pas d'allumage ou de maintient allumé du poêle """  
             if stoveIsOn :
                 """ Poêle allumé """
-                if (not currentModeDefined and not onForced and not offForced) or \
-                        (not currentModeDefined and onForced and not offForced and tempForcedZone3) or \
-                        (currentModeDefined and not onForced and not offForced and tempZone3) or \
-                        (currentModeDefined and not onForced and offForced) or \
-                        (currentModeDefined and tempZone2 and minutesToEndPeriode != None and minutesToEndPeriode < startLimitBeforeEndPeriod) :
+                if (not currentPeriodDefined and not onForced and not offForced) or \
+                        (not currentPeriodDefined and onForced and not offForced and tempForcedZone3) or \
+                        (currentPeriodDefined and not onForced and not offForced and tempZone3) or \
+                        (currentPeriodDefined and not onForced and offForced) or \
+                        (currentPeriodDefined and tempZone2 and  endPeriodPowerOnLimit) :
                     """ Pas de mode défini et pas d'indicateur de forçage """
                     """ OU Pas de mode défini et indicateur de marche forcée et zone de température 3 """
                     """ OU Mode défini et pas d'indicateur de forçage et zone de température 3 """
                     """ OU Mode défini et indicateur d'arrêt forcé défini """
-                    """ OU La période se termine dans moins de 30 minutes et en zone de température 2 """
+                    """ OU La période se termine dans moins de XX minutes et en zone de température 2 """
                     """ => On éteint """
                     shutdownStove = True
             else :

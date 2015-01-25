@@ -4,6 +4,8 @@ Created on 6 avr. 2014
 
 @author: nestof
 '''
+from datetime import datetime, timedelta
+
 from com.nestof.domocore import enumeration
 from com.nestof.domocore.dao.HistoTempDao import HistoTempDao
 from com.nestof.domocore.dao.ModeDao import ModeDao
@@ -11,6 +13,7 @@ from com.nestof.domocore.dao.ParameterDao import ParameterDao
 from com.nestof.domocore.dao.PeriodDao import PeriodDao
 from com.nestof.domocore.domain.HistoTemp import HistoTemp
 from com.nestof.domocore.domain.Mode import Mode
+from com.nestof.domocore.dto.PeriodDto import PeriodDto
 
 
 class DatabaseService(object):
@@ -28,21 +31,54 @@ class DatabaseService(object):
         self._modeDao = ModeDao(database)
         self._parametrageDao = ParameterDao(database)
         self._histoTempDao = HistoTempDao(database)    
-        
-    def findCurrentMode(self):
-        """ Return the active mode """
-        
-        periode = self._periodDao.findCurrent()
     
-        mode = None
+    def findNextPeriode(self, currentPeriode):
+        if currentPeriode == None:
+            return None
         
-        if periode != None :        
-            mode = self._modeDao.findByPk(periode._modeId)
+        nextPeriodDto = None
+                  
+        _hour, _minute = list(map(int, currentPeriode._endHour.split(':')))
+        nextPeriodeTime = datetime.now().replace(hour=_hour, minute=_minute)
+        nextPeriodeTime += timedelta(minutes=1)
+        
+        nextPeriode = self._periodDao.findAtDatetime(nextPeriodeTime)        
+        nextMode = None
+        
+        if nextPeriode != None :        
+            nextMode = self._modeDao.findByPk(nextPeriode._modeId)
+            nextPeriode._mode = nextMode
+        
+            nextPeriodDto= PeriodDto(nextPeriode, nextMode)
             
-        return mode
+            _hour, _minute = list(map(int, nextPeriode._startHour.split(':')))
+            nextPeriodDto._startDatetime = nextPeriodeTime.replace(hour=_hour, minute=_minute)
+            
+            _hour, _minute = list(map(int, nextPeriode._endHour.split(':')))
+            nextPeriodDto._endDatetime = nextPeriodeTime.replace(hour=_hour, minute=_minute)
+        
+        return nextPeriodDto
     
     def findCurrentPeriode(self):
-        return self._periodDao.findCurrent()
+        periodDto = None
+        
+        
+        now = datetime.now()
+        currentPeriode = self._periodDao.findAtDatetime(now)
+        currentMode = None
+        
+        if currentPeriode != None :  
+            currentMode = self._modeDao.findByPk(currentPeriode._modeId)
+        
+            periodDto = PeriodDto(currentPeriode, currentMode)
+            
+            _hour, _minute = list(map(int, currentPeriode._startHour.split(':')))
+            periodDto._startDatetime = now.replace(hour=_hour, minute=_minute)
+            
+            _hour, _minute = list(map(int, currentPeriode._endHour.split(':')))
+            periodDto._endDatetime = now.replace(hour=_hour, minute=_minute)
+        
+        return periodDto
     
     def findForcedMode(self):
         mode = Mode()

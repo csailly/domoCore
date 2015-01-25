@@ -32,4 +32,5 @@ class Period(object):
         self._startHour = None
         self._endHour = None
         self._modeId = None
+        self._mode = None
         
