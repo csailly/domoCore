@@ -78,7 +78,7 @@ class PeriodDao(object):
             requete = '''select * from ('''
             requete += ''' SELECT * FROM ''' + Period.tableName + ''' p where '''
             ''' On récupère la période à la date courante '''
-            requete += ''' ((p.''' + Period.colStartDateName + ''' <= ? and p.''' + Period.colEndDateName + ''' >= ?)     and p.''' + Period.colStartHourName + ''' <= time(?) and p.''' + Period.colEndHourName + ''' > time(?)) '''
+            requete += ''' ((p.''' + Period.colStartDateName + ''' <= date(?) and p.''' + Period.colEndDateName + ''' >= date(?))     and p.''' + Period.colStartHourName + ''' <= time(?,'localtime') and p.''' + Period.colEndHourName + ''' > time(?,'localtime')) '''
             requete += ''' or '''
             ''' Ou la période du jour calendaire '''
             requete += ''' (p.jour = strftime('%w', ?) and p.''' + Period.colStartHourName + ''' <= time(?) and p.''' + Period.colEndHourName + ''' > time(?)) '''
