@@ -77,7 +77,8 @@ class MCZProtocolService(object):
         - bit 1 => 1
         - bits 2 à 4 => niveau de ventilation
         - bits 5 à 7 => puissance chauffe
-        - bits 8 à 10 => ordre
+        - bits 8 à 9 => ordre
+        - bit 10 => 0
         - bit 11 => bit de parité sur les bits 1 à 10
         - bit 12 => 1
         """
@@ -85,7 +86,7 @@ class MCZProtocolService(object):
         data4 = '1' 
         data4 += ventilation.getBinValue() 
         data4 += puissance.getBinValue()   
-        data4 += ordre.getBinValue() 
+        data4 += ordre.getBinValue()
         data4 += self.__getParityBit(data4)  
         data4 += '1'
         
@@ -220,17 +221,12 @@ class MCZProtocolService(object):
         return int(lastTrameMCZActionneur._flag)
     
     
-    def getNiveauPuissance(self, currentTemp, consigne):
+    def getNiveauPuissance(self, currentTemp, consigne, boostActive):
         """ Return the power level according to current temperature and wanted temperature """
         if currentTemp >= consigne :
             return enumeration.NiveauPuissance.niveau1
-        else :
-            """ Durée écoulée depuis dernièr allumage """
-            lastPowerOnElapsedTime = self.getLastPowerOnElapsedTime()
-            
-            boostDuration = self.__databaseService.getEmitterBoostDuration()
-            
-            if (lastPowerOnElapsedTime == None or lastPowerOnElapsedTime <= float(boostDuration)):
+        else :           
+            if (boostActive):
                 return enumeration.NiveauPuissance.niveau5
             else:
                 if currentTemp >= consigne - 1 :
@@ -278,12 +274,12 @@ class MCZProtocolService(object):
         
     def getLastPowerOnElapsedTime(self):
         """ Return  the elapsed time since the last power off in minute"""
-        lastPowerOff = self.__histoTrameMczDao.getLastPowerOn()
-        if lastPowerOff == None :
+        lastPowerOn = self.__histoTrameMczDao.getLastPowerOn()
+        if lastPowerOn == None :
             return None   
-        lastTime = lastPowerOff._sendDate
+        lastTime = lastPowerOn._sendDate
         currentTime = utils.getCurrentDateTime()            
         delta = currentTime - datetime.strptime(lastTime, "%Y-%m-%d %H:%M:%S.%f")
-        return (delta.days * 24 * 60 * 60 + delta.seconds) / 60    
+        return (delta.days * 24 * 60 * 60 + delta.seconds) / 60
     
     

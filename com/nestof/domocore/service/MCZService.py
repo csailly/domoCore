@@ -37,6 +37,7 @@ class MCZService(object):
         """ Mode en cours """
         currentPeriode = self._databaseService.findCurrentPeriode()        
         currentPeriodDefined = currentPeriode != None
+        previousPeriode =  self._databaseService.findPreviousPeriode(currentPeriode)
         nextPeriode = self._databaseService.findNextPeriode(currentPeriode)
     
         """ Id du dernier mode """
@@ -138,6 +139,22 @@ class MCZService(object):
         """ Arrêt du poêle ou maintient éteint """
         shutdownStove = False
         
+        """ Calcul du nombre de minutes depuis le début de la période """
+        minutesFromStartPeriode = None
+        if currentPeriodDefined and currentPeriode._startDatetime != None:
+            if previousPeriode != None  and currentPeriode._mode._id == previousPeriode._mode._id: 
+                minutesFromStartPeriode = datetime.now() - previousPeriode._startDatetime 
+            else:
+                minutesFromStartPeriode = datetime.now() - currentPeriode._startDatetime
+            minutesFromStartPeriode = (minutesFromStartPeriode.seconds) / 60
+        
+        """ Test si on peut activer le boost au démarrage """
+        boostDuration = self._databaseService.getEmitterBoostDuration()
+        
+        boostActive = False 
+        if (minutesFromStartPeriode <= float(boostDuration)):
+            boostActive = True
+        
         """ Calcul du nombre de minutes avant la fin de la période """
         minutesToEndPeriode = None
         if currentPeriodDefined and currentPeriode._endDatetime != None:
@@ -171,13 +188,13 @@ class MCZService(object):
                 """ OU Pas d'indicateurs de forçade de définis et en zone de température 2 et poêle déjà en marche """
                 """ OU Indicateur de marche forcée défini et en zone de température 2 et poêle en arrêt """
                 """ => On allume ou on maintient allumé """
-                niveauPuissance = self._mczProtocolService.getNiveauPuissance(currentTemp, currentPeriode._mode._cons);
+                niveauPuissance = self._mczProtocolService.getNiveauPuissance(currentTemp, currentPeriode._mode._cons, boostActive);
                 startStove = True
         elif onForced and (tempForcedZone1 or tempForcedZone2) :
             """ Pas de mode de défini """
             """ ET indicateur de marche forcée défini et en zones de température 1 ou 2 """
             if tempForcedZone1 :
-                niveauPuissance = self._mczProtocolService.getNiveauPuissance(currentTemp, forcedMode._cons);
+                niveauPuissance = self._mczProtocolService.getNiveauPuissance(currentTemp, forcedMode._cons, boostActive);
             """ => On allume ou on maintient allumé """
             startStove = True
                 
@@ -224,10 +241,10 @@ class MCZService(object):
         if startStove or shutdownStove :
             if (trameActionneur != enumeration.Actionneur.utilisateur or \
                 trameActionneur == enumeration.Actionneur.utilisateur and self._databaseService.isCheckDelays()):
-                check = True
+                checkDelays = True
             else:
-                check = False           
-            self.constructAndSendTrame(startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation, check)
+                checkDelays = False           
+            self.constructAndSendTrame(startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation, checkDelays)
         
     def launchManu(self):
         self._logger.debug("---------- Launching Manu Mode ----------")
@@ -278,7 +295,7 @@ class MCZService(object):
         if manualOrder == enumeration.OrdreManuel.marche and (tempManualZone1 or tempManualZone2):
             """ Ordre d'allumage et zones de température 1 ou 2 """
             startStove = True
-            niveauPuissance = self._mczProtocolService.getNiveauPuissance(currentTemp, manualMode._cons);            
+            niveauPuissance = self._mczProtocolService.getNiveauPuissance(currentTemp, manualMode._cons, True);            
             trameEtat = enumeration.Etat.on
             if not stoveIsOn :
                 trameActionneur = enumeration.Actionneur.utilisateur
@@ -334,16 +351,16 @@ class MCZService(object):
         self.constructAndSendTrame(False, True, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation, True)
 
         
-    def constructAndSendTrame(self, startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation, check):
+    def constructAndSendTrame(self, startStove, shutdownStove, trameEtat, trameMode, trameActionneur, niveauPuissance, niveauVentilation, checkDelays):
         self._logger.debug("  ** Construction de la trame **")
         self._logger.debug("  Etat            : " + trameEtat.name)
         self._logger.debug("  Mode            : " + trameMode.name)
         self._logger.debug("  Actionneur      : " + trameActionneur.name)
         self._logger.debug("  Puissance       : " + niveauPuissance.name)
         self._logger.debug("  Ventilation     : " + niveauVentilation.name)        
-        self._logger.debug("  Contrôles       : " + str(check))        
+        self._logger.debug("  Contrôles       : " + str(checkDelays))        
         
-        if (check) :        
+        if (checkDelays) :        
             """ Durée écoulée depuis dernière extinction """
             lastPowerOffElapsedTime = self._mczProtocolService.getLastPowerOffElapsedTime()
     

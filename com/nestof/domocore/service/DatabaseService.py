@@ -31,6 +31,40 @@ class DatabaseService(object):
         self._modeDao = ModeDao(database)
         self._parametrageDao = ParameterDao(database)
         self._histoTempDao = HistoTempDao(database)    
+
+    '''
+    Return the periode previous the currentPeiode
+    @param currentPeriode: the current period
+    @return: PeriodDto
+    '''
+    def findPreviousPeriode(self, currentPeriode):
+        if currentPeriode == None:
+            return None
+        
+        previousPeriodDto = None
+        
+        # Split current periode start time          
+        _hour, _minute = list(map(int, currentPeriode._startHour.split(':')))
+        
+        previousPeriodeTime = datetime.now().replace(hour=_hour, minute=_minute)
+        previousPeriodeTime -= timedelta(minutes=2)
+        
+        previousPeriode = self._periodDao.findAtDatetime(previousPeriodeTime)        
+        previousMode = None
+        
+        if previousPeriode != None :        
+            previousMode = self._modeDao.findByPk(previousPeriode._modeId)
+            previousPeriode._mode = previousMode
+        
+            previousPeriodDto = PeriodDto(previousPeriode, previousMode)
+            
+            _hour, _minute = list(map(int, previousPeriode._startHour.split(':')))
+            previousPeriodDto._startDatetime = previousPeriodeTime.replace(hour=_hour, minute=_minute)
+            
+            _hour, _minute = list(map(int, previousPeriode._endHour.split(':')))
+            previousPeriodDto._endDatetime = previousPeriodeTime.replace(hour=_hour, minute=_minute)
+        
+        return previousPeriodDto
     
     def findNextPeriode(self, currentPeriode):
         if currentPeriode == None:
@@ -49,7 +83,7 @@ class DatabaseService(object):
             nextMode = self._modeDao.findByPk(nextPeriode._modeId)
             nextPeriode._mode = nextMode
         
-            nextPeriodDto= PeriodDto(nextPeriode, nextMode)
+            nextPeriodDto = PeriodDto(nextPeriode, nextMode)
             
             _hour, _minute = list(map(int, nextPeriode._startHour.split(':')))
             nextPeriodDto._startDatetime = nextPeriodeTime.replace(hour=_hour, minute=_minute)
