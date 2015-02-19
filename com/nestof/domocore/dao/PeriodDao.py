@@ -81,7 +81,7 @@ class PeriodDao(object):
             requete += ''' ((p.''' + Period.colStartDateName + ''' <= date(?) and p.''' + Period.colEndDateName + ''' >= date(?))     and p.''' + Period.colStartHourName + ''' <= time(?,'localtime') and p.''' + Period.colEndHourName + ''' > time(?,'localtime')) '''
             requete += ''' or '''
             ''' Ou la période du jour calendaire '''
-            requete += ''' (p.jour = strftime('%w', ?) and p.''' + Period.colStartHourName + ''' <= time(?, 'localtime') and p.''' + Period.colEndHourName + ''' > time(?, 'localtime')) '''
+            requete += ''' (p.jour = strftime('%w', ?) and p.''' + Period.colStartHourName + ''' <= time(?, 'utc') and p.''' + Period.colEndHourName + ''' > time(?, 'utc')) '''
             ''' On trie pour obtenir en priorité la période à la date courante '''
             requete += ''' order by  p.''' + Period.colStartDateName + ''' desc, p.''' + Period.colEndDateName + ''' asc '''
             ''' On ne retient alors que le 1er résultat '''
