@@ -11,6 +11,7 @@ import logging
 import logging.config
 from logging.handlers import TimedRotatingFileHandler
 from os.path import os, sys, normpath, normcase
+from time import sleep
 
 from com.nestof.domocore import utils
 from com.nestof.domocore.service.DatabaseService import DatabaseService
@@ -97,12 +98,17 @@ if __name__ == '__main__':
         tempSonde2 = tempServiceDs18b20.readTemp()
     except Exception as e:
         tempSonde2 = None
+
+    logger.debug("Sonde 1 : "+str(tempSonde1)+" - Sonde 2 : "+str(tempSonde2))
     
     
     """Save current temp"""
+
     if tempSonde1 != None:
 	databaseService.saveTemp(date, time, tempSonde1, 1)
+
+    sleep(1)
+
     if tempSonde2 != None:
         databaseService.saveTemp(date, time, tempSonde2, 2)
     
-    logger.debug("Sonde 1 : "+str(tempSonde1)+" - Sonde 2 : "+str(tempSonde2))
