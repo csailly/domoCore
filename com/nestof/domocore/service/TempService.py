@@ -8,7 +8,7 @@ import glob
 import os
 import time
 #import smbus
-
+from requests import get
 
 class Degrade(object):
     '''
@@ -71,6 +71,24 @@ class DS18B20(object):
             temp_c = float(temp_string) / 1000.0
             return temp_c
 
+class API(object):
+    '''
+    classdocs
+    '''
+    def __init__(self):
+        '''
+        Constructor
+        '''
+        self.__url = 'http://my.api'
+        self.__headers = {
+            'Authorization': 'Bearer my-api-token',
+            'content-type': 'application/json',
+        }
+
+    def readTemp(self):
+        response = get(self.__url, headers=self.__headers)
+        return float(response.json()['state'])
+
 if __name__ == '__main__':
-    temperatureProvider = Degrade()
+    temperatureProvider = API()
     print(temperatureProvider.readTemp())
