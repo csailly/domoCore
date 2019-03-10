@@ -7,7 +7,7 @@ Created on 16 avr. 2014
 import glob
 import os
 import time
-#import smbus
+import smbus
 
 
 class Degrade(object):
@@ -18,8 +18,8 @@ class Degrade(object):
         '''
         Constructor
         '''
-
-    def readTemp(self):
+        
+    def readTemp(self):     
         return 19
 
 class Tmp102(object):
@@ -32,11 +32,11 @@ class Tmp102(object):
         '''
         self.__bus = smbus.SMBus(1)
         self.__address = 0x48
-
+        
     def readTemp(self):
         tmp = self.__bus.read_word_data(self.__address , 0x00)
         Lo = (tmp & 0xff00) >> 8 ;    Hi = (tmp & 0x00ff)
-        temp = (((Hi * 256) + Lo) >> 4) * 0.0625
+        temp = (((Hi * 256) + Lo) >> 4) * 0.0625      
         return temp
 
 class DS18B20(object):
@@ -71,6 +71,7 @@ class DS18B20(object):
             temp_c = float(temp_string) / 1000.0
             return temp_c
 
+  
 if __name__ == '__main__':
-    temperatureProvider = Degrade()
-    print(temperatureProvider.readTemp())
+    tmp102 = Tmp102()
+    print(tmp102.readTemp())      
